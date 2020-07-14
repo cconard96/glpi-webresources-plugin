@@ -1,0 +1,51 @@
+.webresources-header {
+   font-size: 1.4em;
+   margin-bottom: 15px;
+}
+
+.webresources-categories {
+   .webresources-category {
+      border-top: 1px solid black;
+      margin-bottom: 15px;
+
+      .webresources-category-header {
+         font-size: 1.2em;
+         border-top: 4px solid black;
+         width: fit-content;
+         padding-right: 10px;
+      }
+
+      .webresources-item {
+         display: inline-block;
+         margin-left: 5px;
+         margin-right: 5px;
+         width: 5em;
+         vertical-align: top;
+
+         a, a:hover {
+            color: var(--main-text-color);
+            text-decoration: none;
+         }
+
+         &:hover {
+            background-color: #F0F0F0;
+         }
+
+         .webresources-item-icon {
+            text-align: center;
+            font-size: 1.2em;
+
+            img {
+               width: 64px;
+               height: 64px;
+               margin-top: 5px;
+               margin-bottom: 5px;
+            }
+         }
+
+         .webresources-item-title {
+            text-align: center;
+         }
+      }
+   }
+}

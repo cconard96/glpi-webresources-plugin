@@ -1,0 +1,44 @@
+.webresources-header {
+  font-size: 1.4em;
+  margin-bottom: 15px;
+}
+
+.webresources-categories .webresources-category {
+  border-top: 1px solid black;
+  margin-bottom: 15px;
+}
+.webresources-categories .webresources-category .webresources-category-header {
+  font-size: 1.2em;
+  border-top: 4px solid black;
+  width: fit-content;
+  padding-right: 10px;
+}
+.webresources-categories .webresources-category .webresources-item {
+  display: inline-block;
+  margin-left: 5px;
+  margin-right: 5px;
+  width: 5em;
+  vertical-align: top;
+}
+.webresources-categories .webresources-category .webresources-item a, .webresources-categories .webresources-category .webresources-item a:hover {
+  color: var(--main-text-color);
+  text-decoration: none;
+}
+.webresources-categories .webresources-category .webresources-item:hover {
+  background-color: #F0F0F0;
+}
+.webresources-categories .webresources-category .webresources-item .webresources-item-icon {
+  text-align: center;
+  font-size: 1.2em;
+}
+.webresources-categories .webresources-category .webresources-item .webresources-item-icon img {
+  width: 64px;
+  height: 64px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+.webresources-categories .webresources-category .webresources-item .webresources-item-title {
+  text-align: center;
+}
+
+/*# sourceMappingURL=webresources.css.map */
