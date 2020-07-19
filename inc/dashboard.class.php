@@ -75,7 +75,7 @@ class PluginWebresourcesDashboard extends CommonGLPI {
                if (empty($resource['icon'])) {
                   $resource['icon'] = 'fab fa-chrome';
                }
-               echo '<i class="' . $resource['icon'] . '" title="' . $resource['name'] . '" alt="' . $resource['name'] . '"></i>';
+               echo '<i style="color: '.$resource['color'].';" class="' . $resource['icon'] . '" title="' . $resource['name'] . '" alt="' . $resource['name'] . '"></i>';
             }
             echo '</div>';
             echo '<div class="settings-item-title">'.$resource['name'].'</div>';

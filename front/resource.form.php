@@ -110,7 +110,7 @@ if (isset($_POST["add"])) {
    Html::back();
 
 } else {
-   Html::header(PluginWebresourcesResource::getTypeName(Session::getPluralNumber()), '', 'plugins', 'PluginWebresourcesResource');
+   Html::header(PluginWebresourcesResource::getTypeName(Session::getPluralNumber()), '', 'plugins', 'PluginWebresourcesDashboard');
    $resource->display($_REQUEST);
    Html::footer();
 }

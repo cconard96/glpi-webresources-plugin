@@ -412,6 +412,17 @@ class PluginWebresourcesResource extends CommonDBVisible implements ExtraVisibil
       ]);
       echo "</td></tr>";
 
+      echo "<tr class='tab_bg_1'>";
+      echo "<td>".__('Icon Color', 'webresourcecs')."</td><td>";
+      Html::showColorField('color', [
+         'value'  => $this->fields['color'] ?? '#000000'
+      ]);
+      echo '&nbsp;';
+      Html::showToolTip(__('Only applies to FontAwesome icons and not images', 'webresources'));
+      echo "</td>";
+
+      echo "<td></td><td></td></tr>";
+
       $this->showFormButtons($options);
 
       return true;

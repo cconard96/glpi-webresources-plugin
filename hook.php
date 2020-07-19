@@ -16,6 +16,7 @@ function plugin_webresources_install()
                   `name` varchar(255) NOT NULL,
                   `link` varchar(255) NOT NULL,
                   `icon` varchar(255) DEFAULT NULL,
+                  `color` varchar(16) NOT NULL DEFAULT '#000000',
                   `plugin_webresources_categories_id` int(11) DEFAULT 0,
                 PRIMARY KEY (`id`)
                ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
