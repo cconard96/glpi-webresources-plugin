@@ -4,7 +4,7 @@ class PluginWebresourcesResource_Profile extends CommonDBRelation {
 
    // From CommonDBRelation
    static public $itemtype_1          = 'PluginWebresourcesResource';
-   static public $items_id_1          = 'plugin_webresource_resources_id';
+   static public $items_id_1          = 'plugin_webresources_resources_id';
    static public $itemtype_2          = 'Profile';
    static public $items_id_2          = 'profiles_id';
 

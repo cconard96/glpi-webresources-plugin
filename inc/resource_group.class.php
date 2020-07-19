@@ -4,7 +4,7 @@ class PluginWebresourcesResource_Group extends CommonDBRelation {
 
    // From CommonDBRelation
    static public $itemtype_1          = 'PluginWebresourcesResource';
-   static public $items_id_1          = 'plugin_webresource_resources_id';
+   static public $items_id_1          = 'plugin_webresources_resources_id';
    static public $itemtype_2          = 'Group';
    static public $items_id_2          = 'groups_id';
 
