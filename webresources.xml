@@ -42,13 +42,9 @@ For more information about URI schemes please refer to https://en.wikipedia.org/
     <tags>
         <en>
             <tag>Tool</tag>
-        </en>
-        <lang>
             <tag>Resource</tag>
-        </lang>
-        <lang>
             <tag>Plugin</tag>
-        </lang>
+        </en>
     </tags>
     <screenshots>
         <screenshot>https://raw.githubusercontent.com/cconard96/glpi-webresources-plugin/master/screenshots/Dashboard.png</screenshot>
