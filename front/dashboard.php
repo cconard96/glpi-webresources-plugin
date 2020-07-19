@@ -4,7 +4,7 @@ include ('../../../inc/includes.php');
 
 Session::checkLoginUser();
 
-Html::header(PluginWebresourcesDashboard::getTypeName(Session::getPluralNumber()), '', 'plugins', 'PluginWebresourcesResource');
+Html::header(PluginWebresourcesDashboard::getTypeName(Session::getPluralNumber()), '', 'plugins', 'PluginWebresourcesDashboard');
 
 PluginWebresourcesDashboard::showDashboard();
 

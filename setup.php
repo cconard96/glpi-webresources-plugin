@@ -9,7 +9,7 @@ function plugin_init_webresources()
 	global $PLUGIN_HOOKS;
 	$PLUGIN_HOOKS['csrf_compliant']['webresources'] = true;
    if (Session::haveRight(PluginWebresourcesResource::$rightname, READ)) {
-      $PLUGIN_HOOKS['menu_toadd']['webresources'] = ['plugins' => 'PluginWebresourcesResource'];
+      $PLUGIN_HOOKS['menu_toadd']['webresources'] = ['plugins' => 'PluginWebresourcesDashboard'];
    }
    Plugin::registerClass('PluginWebresourcesProfile', ['addtabon' => ['Profile']]);
    $PLUGIN_HOOKS['add_css']['webresources'][] = 'css/webresources.css';

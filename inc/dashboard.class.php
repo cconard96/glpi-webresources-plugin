@@ -2,9 +2,35 @@
 
 class PluginWebresourcesDashboard extends CommonGLPI {
 
+   public static $rightname = 'plugin_webresources_resource';
+
    public static function getTypeName($nb = 0)
    {
       return PluginWebresourcesResource::getTypeName(Session::getPluralNumber());
+   }
+
+   public static function getIcon()
+   {
+      return 'fab fa-chrome';
+   }
+
+   static function getAdditionalMenuLinks() {
+
+      $links = [];
+      if (static::canView()) {
+         $links['summary_kanban'] = PluginWebresourcesDashboard::getSearchURL(false);
+      }
+      if (count($links)) {
+         return $links;
+      }
+      return false;
+   }
+
+   public static function getMenuContent()
+   {
+      $menu = parent::getMenuContent();
+      $menu['links']['search'] = PluginWebresourcesResource::getSearchURL(false);
+      return $menu;
    }
 
    public static function showDashboard()
