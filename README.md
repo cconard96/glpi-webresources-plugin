@@ -5,6 +5,8 @@ Resources can be scoped to specific Entities, Profiles, Groups, or Users (or a m
 Resources can have an image icon (favicon for example), or a FontAwesome icon like 'fab fa-github".
 Non-image icons can have their colors changed as you see fit.
 
+![Dashboard](https://raw.githubusercontent.com/cconard96/glpi-webresources-plugin/master/screenshots/Dashboard.png)
+
 Resources can be any weblink or a link with a special URI scheme. For example these links are all valid:
  - https://glpi-project.org (Standard URL)
  - market://details?id=org.glpi.inventory.agent&hl=en_US (Link to app on Android's Play Store)
