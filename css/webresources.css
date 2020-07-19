@@ -15,7 +15,7 @@
 }
 .webresources-categories .webresources-category .webresources-item {
   display: inline-block;
-  margin-left: 5px;
+  margin-left: 10px;
   margin-right: 5px;
   width: 5em;
   vertical-align: top;
@@ -36,6 +36,14 @@
   height: 64px;
   margin-top: 5px;
   margin-bottom: 5px;
+}
+.webresources-categories .webresources-category .webresources-item .webresources-item-icon i.fas, .webresources-categories .webresources-category .webresources-item .webresources-item-icon i.far, .webresources-categories .webresources-category .webresources-item .webresources-item-icon i.fab {
+  font-size: 64px;
+  width: 64px;
+  height: 64px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  padding-bottom: 3px;
 }
 .webresources-categories .webresources-category .webresources-item .webresources-item-title {
   text-align: center;

@@ -65,7 +65,15 @@ class PluginWebresourcesDashboard extends CommonGLPI {
             echo '<div class="webresources-item">';
             echo '<a href="'.$resource['link'].'" target="_blank">';
             echo '<div class="webresources-item-icon">';
-            echo '<img src="'.$resource['icon'].'" title="'.$resource['name'].'" alt="'.$resource['name'].'"/>';
+            $icon_type = Toolbox::isValidWebUrl($resource['icon']) ? 'image' : 'icon';
+            if ($icon_type === 'image') {
+               echo '<img src="' . $resource['icon'] . '" title="' . $resource['name'] . '" alt="' . $resource['name'] . '"/>';
+            } else {
+               if (empty($resource['icon'])) {
+                  $resource['icon'] = 'fab fa-chrome';
+               }
+               echo '<i class="' . $resource['icon'] . '" title="' . $resource['name'] . '" alt="' . $resource['name'] . '"></i>';
+            }
             echo '</div>';
             echo '<div class="settings-item-title">'.$resource['name'].'</div>';
             echo '</a>';
