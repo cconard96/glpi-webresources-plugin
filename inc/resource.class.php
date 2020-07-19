@@ -329,12 +329,8 @@ class PluginWebresourcesResource extends CommonDBVisible implements ExtraVisibil
 
       // Users
       if (Session::getLoginUserID()) {
-         $where = [
+         $where['OR'] = [
             "{$res_user_table}.users_id" => Session::getLoginUserID(),
-         ];
-      } else {
-         $where = [
-            0
          ];
       }
       // Groups
