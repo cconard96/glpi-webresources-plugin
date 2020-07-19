@@ -1,0 +1,12 @@
+# Web Resources Plugin for GLPI
+
+Adds a dashboard for web resources.
+Resources can be scoped to specific Entities, Profiles, Groups, or Users (or a mix).
+Resources can have an image icon (favicon for example), or a FontAwesome icon like 'fab fa-github".
+Non-image icons can have their colors changed as you see fit.
+
+Resources can be any weblink or a link with a special URI scheme. For example these links are all valid:
+ - https://glpi-project.org (Standard URL)
+ - market://details?id=org.glpi.inventory.agent&hl=en_US (Link to app on Android's Play Store)
+ - softwarecenter://Page=AvailableSoftware (Link to the Available Software page in the SCCM/MEM Software Center)
+For more information about URI schemes please refer to https://en.wikipedia.org/wiki/List_of_URI_schemes.
