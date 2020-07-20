@@ -87,7 +87,7 @@ class PluginWebresourcesDashboard extends CommonGLPI {
                echo '<i style="color: '.$resource['color'].';" class="' . $resource['icon'] . '" title="' . $resource['name'] . '" alt="' . $resource['name'] . '"></i>';
             }
             echo '</div>';
-            echo '<div class="settings-item-title">'.$resource['name'].'</div>';
+            echo '<div class="webresources-item-title">'.$resource['name'].'</div>';
             echo '</a>';
             echo '</div>';
          }

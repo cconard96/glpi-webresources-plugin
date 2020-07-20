@@ -406,7 +406,7 @@ class PluginWebresourcesResource extends CommonDBVisible implements ExtraVisibil
       global $CFG_GLPI;
 
       $this->initForm($ID, $options);
-      $this->showFormHeader($options);
+      $this->showFormHeader($options + ['formoptions' => 'class="webresources-form"']);
 
       $canedit = $this->can($ID, UPDATE);
 
@@ -444,7 +444,63 @@ class PluginWebresourcesResource extends CommonDBVisible implements ExtraVisibil
 
       echo "<td></td><td></td></tr>";
 
+      // Preview
+      echo '<tr><th colspan="4">'.__('Preview', 'webresources').'</th></tr>';
+      echo '<tr class="webresources-categories"><td colspan="4" class="webresources-category">';
+      echo '<div id="refresh-preview" style="display: none">';
+      echo '<button><i class="fas fa-sync"></i></button>';
+      echo '<span class="very_small_space">'.__('Refresh icon image', 'webresources').'</span></div>';
+      echo '<div class="webresources-item">';
+      echo '<div class="webresources-item-icon">';
+      $icon_type = Toolbox::isValidWebUrl($this->fields['icon']) ? 'image' : 'icon';
+      echo '<img style="display:'.($icon_type === 'image' ? 'block' : 'none').'" src="' . $this->fields['icon'] . '" title="' . $this->fields['name'] . '" alt="' . $this->fields['name'] . '"/>';
+      if (empty($this->fields['icon'])) {
+         $this->fields['icon'] = 'fab fa-chrome';
+      }
+      echo '<i style="color: '.$this->fields['color'].';display:'.($icon_type === 'icon' ? 'block' : 'none').'" class="' . $this->fields['icon'] . '" title="' . $this->fields['name'] . '" alt="' . $this->fields['name'] . '"></i>';
+      echo '</div>';
+      echo '<div class="webresources-item-title">'.$this->fields['name'].'</div>';
+      echo '</div></td></tr>';
+
       $this->showFormButtons($options);
+
+      $script = <<<JS
+$(document).ready(function() {
+   function isWebURL(url) {
+      const pattern = /^(?:http[s]?:\/\/(?:[^\s`!()\[\]{};'",<>?«»“”‘’+]+|[^\s`!()\[\]{};:'".,<>?«»“”‘’+]))$/iu;
+      return pattern.test(url);
+   }
+   $('.webresources-form').on('input', 'input[name="name"]', function() {
+      $('.webresources-form .webresources-item-title').text($('input[name="name"]').val());
+   });
+   $('.webresources-form').on('input', 'input[name="icon"]', function() {
+      let icon_val = $('input[name="icon"]').val();
+      if (icon_val === "") {
+         icon_val = 'fab fa-chrome';
+      }
+      const is_url = isWebURL(icon_val);
+      if (is_url) {
+         $('.webresources-form .webresources-item-icon i').hide();
+         $('.webresources-form .webresources-item-icon img').show();
+         $('.webresources-form #refresh-preview').show();
+      } else {
+         $('.webresources-form .webresources-item-icon img').hide();
+         $('.webresources-form .webresources-item-icon i').show();
+         $('.webresources-form .webresources-item-icon i').attr('class', icon_val);
+      }
+   });
+   $('.webresources-form').on('input', 'input[name="color"]', function() {
+      $('.webresources-form .webresources-item-icon').css({color: $('input[name="color"]').val()})
+   });
+   $('.webresources-form #refresh-preview button').on('click', function(e) {
+      e.preventDefault();
+      const icon_val = $('input[name="icon"]').val();
+      $('.webresources-form .webresources-item-icon img').attr('src', icon_val);
+      $('.webresources-form #refresh-preview').hide();
+   })
+});
+JS;
+      echo Html::scriptBlock($script);
 
       return true;
    }
