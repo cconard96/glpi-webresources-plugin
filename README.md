@@ -12,3 +12,6 @@ Resources can be any weblink or a link with a special URI scheme. For example th
  - market://details?id=org.glpi.inventory.agent&hl=en_US (Link to app on Android's Play Store)
  - softwarecenter://Page=AvailableSoftware (Link to the Available Software page in the SCCM/MEM Software Center)
 For more information about URI schemes please refer to https://en.wikipedia.org/wiki/List_of_URI_schemes.
+
+## How to use
+Please refer to the [Wiki](https://github.com/cconard96/glpi-webresources-plugin/wiki/Quick-Start) for a Quick Start guide.
