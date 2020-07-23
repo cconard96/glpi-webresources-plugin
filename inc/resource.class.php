@@ -424,6 +424,8 @@ class PluginWebresourcesResource extends CommonDBVisible implements ExtraVisibil
       echo Html::input('icon', [
          'value'  => $this->fields['icon'] ?? ''
       ]);
+      echo '&nbsp;';
+      Html::showToolTip(__('Leave blank to automatically use a favicon', 'webresources'));
       echo "</td>";
 
       echo "<td>".PluginWebresourcesCategory::getTypeName(1)."</td>";
@@ -470,10 +472,40 @@ $(document).ready(function() {
       const pattern = /^(?:http[s]?:\/\/(?:[^\s`!()\[\]{};'",<>?«»“”‘’+]+|[^\s`!()\[\]{};:'".,<>?«»“”‘’+]))$/iu;
       return pattern.test(url);
    }
-   $('.webresources-form').on('input', 'input[name="name"]', function() {
+
+   function getIcons(url) {
+      let result = {};
+      $.ajax({
+         method: 'GET',
+         async: false,
+         url: (CFG_GLPI.root_doc + "/plugins/webresources/ajax/" + "scraper.php"),
+         data: {
+            url: url
+         },
+         success: function(icons) {
+            result = JSON.parse(icons);
+         }
+      });
+      return result;
+   }
+
+   const form = $('.webresources-form');
+   form.on('input', 'input[name="name"]', function() {
       $('.webresources-form .webresources-item-title').text($('input[name="name"]').val());
    });
-   $('.webresources-form').on('input', 'input[name="icon"]', function() {
+   form.on('input', 'input[name="link"]', function() {
+      let link_val = $('input[name="link"]').val();
+      let icon_val = $('input[name="icon"]').val();
+      if (icon_val === "") {
+         const is_url = isWebURL(link_val);
+         if (is_url) {
+            $('.webresources-form .webresources-item-icon i').hide();
+            $('.webresources-form .webresources-item-icon img').show();
+            $('.webresources-form #refresh-preview').show();
+         }
+      }
+   });
+   form.on('input', 'input[name="icon"]', function() {
       let icon_val = $('input[name="icon"]').val();
       if (icon_val === "") {
          icon_val = 'fab fa-chrome';
@@ -489,12 +521,20 @@ $(document).ready(function() {
          $('.webresources-form .webresources-item-icon i').attr('class', icon_val);
       }
    });
-   $('.webresources-form').on('input', 'input[name="color"]', function() {
+   form.on('input', 'input[name="color"]', function() {
       $('.webresources-form .webresources-item-icon').css({color: $('input[name="color"]').val()})
    });
    $('.webresources-form #refresh-preview button').on('click', function(e) {
       e.preventDefault();
-      const icon_val = $('input[name="icon"]').val();
+      let icon_val = $('input[name="icon"]').val();
+      if (icon_val === '') {
+         const found_icons = getIcons($('input[name="link"]').val());
+         if (Array.isArray(found_icons)) {
+            let last_icon = found_icons[found_icons.length - 1];
+            icon_val = last_icon['href'];
+            $('input[name="icon"]').val(icon_val);
+         }
+      }
       $('.webresources-form .webresources-item-icon img').attr('src', icon_val);
       $('.webresources-form #refresh-preview').hide();
    })
