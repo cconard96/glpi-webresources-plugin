@@ -13,5 +13,6 @@ Resources can be any weblink or a link with a special URI scheme. For example th
  - softwarecenter://Page=AvailableSoftware (Link to the Available Software page in the SCCM/MEM Software Center)
 For more information about URI schemes please refer to https://en.wikipedia.org/wiki/List_of_URI_schemes.
 
+If you want to try automatically getting an icon for a URL, you should make sure the `ext-dom` extension for PHP is installed and loaded. Otherwise, the plugin will try to fallback to 'DOMAIN/favicon.ico'.
 ## How to use
 Please refer to the [Wiki](https://github.com/cconard96/glpi-webresources-plugin/wiki/Quick-Start) for a Quick Start guide.
