@@ -30,6 +30,8 @@ function plugin_webresources_install()
    $res_profile_table = PluginWebresourcesResource_Profile::getTable();
    $res_group_table = PluginWebresourcesResource_Group::getTable();
    $res_user_table = PluginWebresourcesResource_User::getTable();
+   $clean_install = false;
+
    if (!$DB->tableExists($res_table)) {
       $query = "CREATE TABLE `{$res_table}` (
                   `id` int(11) NOT NULL auto_increment,
@@ -42,6 +44,7 @@ function plugin_webresources_install()
                 PRIMARY KEY (`id`)
                ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
       $DB->queryOrDie($query, 'Error creating Web Resource table' . $DB->error());
+      $clean_install = true;
    }
    if (!$DB->tableExists($res_entity_table)) {
       $query = "CREATE TABLE `{$res_entity_table}` (
@@ -96,6 +99,11 @@ function plugin_webresources_install()
       $DB->queryOrDie($query, 'Error creating Web Resource Category table' . $DB->error());
    }
 
+   $migration = new Migration(PLUGIN_WEBRESOURCES_VERSION);
+   if ($clean_install) {
+      $migration->addRight(PluginWebresourcesResource::$rightname);
+   }
+   $migration->executeMigration();
 	return true;
 }
 

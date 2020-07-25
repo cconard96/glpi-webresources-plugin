@@ -53,6 +53,8 @@ class PluginWebresourcesProfile extends Profile
          echo "<form method='post' action='" . $profile::getFormURL() . "'>";
       }
 
+      $matrix_options = ['canedit' => $can_edit,
+         'default_class' => 'tab_bg_2'];
       $rights = [
          [
             'itemtype' => PluginWebresourcesResource::class,
