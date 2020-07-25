@@ -519,6 +519,7 @@ $(document).ready(function() {
          $('.webresources-form .webresources-item-icon img').hide();
          $('.webresources-form .webresources-item-icon i').show();
          $('.webresources-form .webresources-item-icon i').attr('class', icon_val);
+         $('.webresources-form #refresh-preview').hide();
       }
    });
    form.on('input', 'input[name="color"]', function() {
