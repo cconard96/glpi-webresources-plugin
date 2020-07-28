@@ -466,6 +466,8 @@ class PluginWebresourcesResource extends CommonDBVisible implements ExtraVisibil
 
       $this->showFormButtons($options);
 
+      $plugin_root = Plugin::getWebDir('webresources');
+
       $script = <<<JS
 $(document).ready(function() {
    function isWebURL(url) {
@@ -478,7 +480,7 @@ $(document).ready(function() {
       $.ajax({
          method: 'GET',
          async: false,
-         url: (CFG_GLPI.root_doc + "/plugins/webresources/ajax/" + "scraper.php"),
+         url: ("{$plugin_root}/ajax/scraper.php"),
          data: {
             url: url
          },
