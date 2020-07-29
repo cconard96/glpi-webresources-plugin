@@ -78,14 +78,13 @@ class PluginWebresourcesDashboard extends CommonGLPI {
             echo '<a href="'.$resource['link'].'" target="_blank">';
             echo '<div class="webresources-item-icon">';
             $icon_type = Toolbox::isValidWebUrl($resource['icon']) ? 'image' : 'icon';
-            if ($icon_type === 'image') {
-               echo '<img src="' . $resource['icon'] . '" title="' . $resource['name'] . '" alt="' . $resource['name'] . '"/>';
-            } else {
-               if (empty($resource['icon'])) {
-                  $resource['icon'] = 'fab fa-chrome';
-               }
-               echo '<i style="color: '.$resource['color'].';" class="' . $resource['icon'] . '" title="' . $resource['name'] . '" alt="' . $resource['name'] . '"></i>';
+            echo '<img src="' . $resource['icon'] . '" title="' . $resource['name'] . '" alt="' . $resource['name'] . '" style="'.($icon_type === 'image' ? 'display: block' : 'display: none').'" onerror="onWRImageLoadError(this);"/>';
+
+            if ($icon_type === 'icon' || empty($resource['icon'])) {
+               $resource['icon'] = 'fab fa-chrome';
             }
+            echo '<i style="color: '.$resource['color'].';" class="' . $resource['icon'] . '" title="' . $resource['name'] . '"  style="'.($icon_type === 'icon' ? 'display: block' : 'display: none').'" alt="' . $resource['name'] . '"></i>';
+
             echo '</div>';
             echo '<div class="webresources-item-title">'.$resource['name'].'</div>';
             echo '</a>';
@@ -94,5 +93,17 @@ class PluginWebresourcesDashboard extends CommonGLPI {
          echo '</div></div>';
       }
       echo '</div></div>';
+
+      $js = <<<JS
+function onWRImageLoadError(img) {
+   const img_obj = $(img);
+   img_obj.hide();
+   const i = img_obj.parent().find('i');
+   i.show();
+   i.attr('class', 'fab fa-chrome');
+}
+JS;
+      echo Html::scriptBlock($js);
+
    }
 }
