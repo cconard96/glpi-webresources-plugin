@@ -21,6 +21,8 @@
  --------------------------------------------------------------------------
  */
 
+use Glpi\Event;
+
 class PluginWebresourcesResource extends CommonDBVisible implements ExtraVisibilityCriteria {
 
    const WEBRESOURCEADMIN = 1024;
@@ -553,5 +555,156 @@ JS;
          'type'  => '__VALUE__',
          'right' => self::$rightname
       ];
+   }
+
+   public function getSpecificMassiveActions($checkitem = null)
+   {
+      $actions = [];
+
+      if (Session::getCurrentInterface() === 'central') {
+         if (self::canUpdate()) {
+            $actions[__CLASS__.MassiveAction::CLASS_ACTION_SEPARATOR.'add_target']
+               = __('Add target');
+            $actions[__CLASS__.MassiveAction::CLASS_ACTION_SEPARATOR.'remove_target']
+               = __('Remove target');
+         }
+      }
+
+      $actions = array_merge($actions, parent::getSpecificMassiveActions($checkitem));
+
+      return $actions;
+   }
+
+   public static function showMassiveActionsSubForm(MassiveAction $ma)
+   {
+      global $CFG_GLPI;
+
+      $rand    = mt_rand();
+
+      switch ($ma->getAction()) {
+         case 'add_target':
+         case 'remove_target':
+            echo "<div class='firstbloc'>";
+            echo "<table class='tab_cadre_fixe'>";
+            echo "<tr class='tab_bg_1'><td class='tab_bg_2' width='100px'>";
+
+            $types   = ['Entity', 'Group', 'Profile', 'User'];
+
+            $addrand = Dropdown::showItemTypes('_type', $types);
+            $params = [
+               'type'  => '__VALUE__',
+               'right' => self::$rightname
+            ];
+
+            Ajax::updateItemOnSelectEvent("dropdown__type".$addrand, "visibility$rand",
+               $CFG_GLPI["root_doc"]."/ajax/visibility.php", $params);
+
+            echo "</td>";
+            echo "<td><span id='visibility$rand'></span>";
+            echo "</td></tr>";
+            echo "</table>";
+            echo "</div>";
+            return true;
+      }
+      return parent::showMassiveActionsSubForm($ma);
+   }
+
+   public static function processMassiveActionsForOneItemtype(MassiveAction $ma, CommonDBTM $item, array $ids)
+   {
+      global $DB;
+
+      switch ($ma->getAction()) {
+         case 'add_target' :
+            $input = $ma->getInput();
+
+            foreach ($ids as $id) {
+               $input['plugin_webresources_resources_id'] = $id;
+               try {
+                  $DB->beginTransaction();
+                  switch ($input["_type"]) {
+                     case 'User' :
+                        if (isset($input['users_id']) && $input['users_id']) {
+                           $rel_item = new PluginWebresourcesResource_User();
+                        }
+                        break;
+
+                     case 'Group' :
+                        if (isset($input['groups_id']) && $input['groups_id']) {
+                           $rel_item = new PluginWebresourcesResource_Group();
+                        }
+                        break;
+
+                     case 'Profile' :
+                        if (isset($input['profiles_id']) && $input['profiles_id']) {
+                           $rel_item = new PluginWebresourcesResource_Profile();
+                        }
+                        break;
+
+                     case 'Entity' :
+                        $rel_item = new PluginWebresourcesResource_Entity();
+                        break;
+                  }
+                  if (!is_null($rel_item)) {
+                     $rel_item->add($input);
+                     Event::log($input["plugin_webresources_resources_id"], __CLASS__, 4, "plugins",
+                        sprintf(__('%s adds a target'), $_SESSION["glpiname"]));
+                  }
+                  $DB->commit();
+                  $ma->itemDone($item->getType(), $id, MassiveAction::ACTION_OK);
+               } catch (\RuntimeException $e) {
+                  $DB->rollBack();
+                  $ma->itemDone($item->getType(), $id, $e->getCode());
+                  $ma->addMessage($item->getErrorMessage($e->getMessage()));
+               }
+            }
+            return;
+         case 'remove_target':
+            $input = $ma->getInput();
+
+            foreach ($ids as $id) {
+               $input['plugin_webresources_resources_id'] = $id;
+               try {
+                  $DB->beginTransaction();
+                  switch ($input["_type"]) {
+                     case 'User' :
+                        if (isset($input['users_id']) && $input['users_id']) {
+                           $rel_itemtype = PluginWebresourcesResource_User::class;
+                        }
+                        break;
+
+                     case 'Group' :
+                        if (isset($input['groups_id']) && $input['groups_id']) {
+                           $rel_itemtype = PluginWebresourcesResource_Group::class;
+                        }
+                        break;
+
+                     case 'Profile' :
+                        if (isset($input['profiles_id']) && $input['profiles_id']) {
+                           $rel_itemtype = PluginWebresourcesResource_Profile::class;
+                        }
+                        break;
+
+                     case 'Entity' :
+                        $rel_itemtype = PluginWebresourcesResource_Entity::class;
+                        break;
+                  }
+                  /** @var CommonDBTM $rel_itemtype */
+                  if (!is_null($rel_itemtype)) {
+                     unset($input['_type'], $input['addvisibility'], $input['_glpi_csrf_token']);
+                     $DB->delete($rel_itemtype::getTable(), $input);
+                     Event::log($input["plugin_webresources_resources_id"], __CLASS__, 4, "plugins",
+                        sprintf(__('%s deletes a target'), $_SESSION["glpiname"]));
+                  }
+                  $DB->commit();
+                  $ma->itemDone($item->getType(), $id, MassiveAction::ACTION_OK);
+               } catch (\RuntimeException $e) {
+                  $DB->rollBack();
+                  $ma->itemDone($item->getType(), $id, $e->getCode());
+                  $ma->addMessage($item->getErrorMessage($e->getMessage()));
+               }
+            }
+            return;
+      }
+      parent::processMassiveActionsForOneItemtype($ma, $item, $ids);
    }
 }
