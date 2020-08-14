@@ -22,12 +22,13 @@
  */
 
 include ('../../../inc/includes.php');
+Html::header_nocache();
 
 Session::checkLoginUser();
 
-Html::header(PluginWebresourcesDashboard::getTypeName(Session::getPluralNumber()), '', 'plugins', 'PluginWebresourcesDashboard');
+if (!isset($_REQUEST['context'])) {
+   throw new RuntimeException('Required argument missing!');
+}
 
-$context = $_GET['context'] ?? 'personal';
-PluginWebresourcesDashboard::showDashboard($context);
-
-Html::footer();
+header('Content-Type', 'text/html');
+echo PluginWebresourcesDashboard::getDashboardContent($_REQUEST['context']);

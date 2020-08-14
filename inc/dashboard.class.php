@@ -21,6 +21,9 @@
  --------------------------------------------------------------------------
  */
 
+/**
+ * Web Resources Dashboard
+ */
 class PluginWebresourcesDashboard extends CommonGLPI {
 
    public static $rightname = 'plugin_webresources_resource';
@@ -45,43 +48,236 @@ class PluginWebresourcesDashboard extends CommonGLPI {
       return $menu;
    }
 
-   public static function showDashboard()
+   /**
+    * @since 1.3.0
+    */
+   public static function getDashboardContexts()
+   {
+      $contexts = [
+         'personal'  => __('My resources', 'webresources')
+      ];
+
+      if (Supplier::canView()) {
+         $contexts['suppliers'] = Supplier::getTypeName(Session::getPluralNumber());
+      }
+
+      if (Entity::canView()) {
+         $contexts['entities'] = Entity::getTypeName(Session::getPluralNumber());
+      }
+
+      if (Plugin::isPluginActive('webapplications')) {
+         // Need the plugin because the migration to the core did not transfer the url or management url :(
+         $contexts['appliances'] = Appliance::getTypeName(Session::getPluralNumber());
+      }
+      return $contexts;
+   }
+
+   private static function getPersonalResources()
    {
       global $DB;
 
-      $cat_iterator = $DB->request([
-         'SELECT' => ['id', 'name'],
-         'FROM'   => PluginWebresourcesCategory::getTable(),
-      ]);
-      $categories = [];
-      while ($cat = $cat_iterator->next()) {
-         $categories[$cat['id']] = $cat['name'];
-      }
-
       $iterator = $DB->request([
-         'FROM'   => PluginWebresourcesResource::getTable()
-      ] + PluginWebresourcesResource::getVisibilityCriteria(true));
+            'FROM'   => PluginWebresourcesResource::getTable()
+         ] + PluginWebresourcesResource::getVisibilityCriteria(true));
       $resources = [];
       while($data = $iterator->next()) {
          $resources[$data['plugin_webresources_categories_id']][] = $data;
       }
 
-      echo '<div><div class="webresources-header">'.PluginWebresourcesResource::getTypeName(Session::getPluralNumber()).'</div>';
+      return $resources;
+   }
+
+   private static function getSupplierResources()
+   {
+      global $DB;
+
+      $category = Supplier::getTypeName(Session::getPluralNumber());
+      $iterator = $DB->request([
+         'SELECT' => ['name', 'website'],
+         'FROM'   => Supplier::getTable()
+      ] + getEntitiesRestrictCriteria());
+      $resources = [
+         $category => []
+      ];
+      if (!Supplier::canView()) {
+         return $resources;
+      }
+
+      while($data = $iterator->next()) {
+         if (!empty($data['website'])) {
+            $resources[$category][] = [
+               'name' => $data['name'],
+               'link' => $data['website'],
+               'color' => '#000000',
+               'icon' => '@auto'
+            ];
+         }
+      }
+
+      return $resources;
+   }
+
+   private static function getApplianceResources()
+   {
+      global $DB;
+
+      $category = Appliance::getTypeName(Session::getPluralNumber());
+      $resources = [
+         $category => []
+      ];
+      if (!Appliance::canView()) {
+         return $resources;
+      }
+
+      if (!Plugin::isPluginActive('webapplications')) {
+         return $resources;
+      }
+      $iterator = $DB->request([
+         'SELECT' => ['name', 'address', 'backoffice'],
+         'FROM'   => PluginWebapplicationsAppliance::getTable(),
+         'JOIN'   => [
+            Appliance::getTable() => [
+               'ON'  => [
+                  Appliance::getTable()                        => 'id',
+                  PluginWebapplicationsAppliance::getTable()   => 'appliances_id'
+               ]
+            ]
+         ]
+      ] + getEntitiesRestrictCriteria());
+      $resources = [];
+      while($data = $iterator->next()) {
+         if (!empty($data['address'])) {
+            $resources[$category][] = [
+               'name' => $data['name'],
+               'link' => $data['address'],
+               'color' => '#000000',
+               'icon' => '@auto'
+            ];
+         }
+         if (!empty($data['backoffice'])) {
+            $resources[$category][] = [
+               'name' => $data['name'] . ' (Management)',
+               'link' => $data['backoffice'],
+               'color' => '#000000',
+               'icon' => '@auto'
+            ];
+         }
+      }
+
+      return $resources;
+   }
+
+   private static function getEntityResources()
+   {
+      global $DB;
+
+      $category = Entity::getTypeName(Session::getPluralNumber());
+      $iterator = $DB->request([
+            'SELECT' => ['name', 'website'],
+            'FROM'   => Entity::getTable()
+         ] + getEntitiesRestrictCriteria());
+      $resources = [
+         $category => []
+      ];
+      if (!Entity::canView()) {
+         return $resources;
+      }
+
+      while($data = $iterator->next()) {
+         if (!empty($data['website'])) {
+            $resources[$category][] = [
+               'name'   => $data['name'],
+               'link'   => $data['website'],
+               'color'  => '#000000',
+               'icon'   => '@auto'
+            ];
+         }
+      }
+
+      return $resources;
+   }
+
+   /**
+    * @param string $context
+    * @param bool $regen_icons If true, automatic icons (Dynamic resources based on other items like Suppliers) are regenerated
+    * @return string
+    * @since 1.3.0
+    */
+   public static function getDashboardContent(string $context = 'personal', bool $regen_icons = false): string
+   {
+      global $DB;
+
+      switch ($context)
+      {
+         case 'suppliers':
+            $default_icon = Supplier::getIcon();
+            $resources = self::getSupplierResources();
+            break;
+         case 'appliances':
+            $default_icon = Appliance::getIcon();
+            $resources = self::getApplianceResources();
+            break;
+         case 'entities':
+            $default_icon = Entity::getIcon();
+            $resources = self::getEntityResources();
+            break;
+         case 'personal':
+         default:
+            $default_icon = 'fab fa-chrome';
+            $resources = self::getPersonalResources();
+      }
+
+      $categories = [];
+      if ($context === 'personal') {
+         $cat_iterator = $DB->request([
+            'SELECT' => ['id', 'name'],
+            'FROM'   => PluginWebresourcesCategory::getTable(),
+         ]);
+         while ($cat = $cat_iterator->next()) {
+            $categories[$cat['id']] = $cat['name'];
+         }
+         $header = PluginWebresourcesResource::getTypeName(Session::getPluralNumber());
+      } else {
+         $header = array_key_first($resources);
+      }
+
+      // Fetch and Cache auto-generated icons
+      foreach ($resources as $cat_id => $cat_resources) {
+         foreach ($cat_resources as $res_k => $resource) {
+            if ($resource['icon'] !== '@auto') {
+               continue;
+            }
+            if ($regen_icons || !apcu_exists('webresources.autoico.'.$resource['link'])) {
+               $ico = PluginWebresourcesScraper::get($resource['link']);
+               apcu_store('webresources.autoico.'.$resource['link'], reset($ico)['href']);
+            }
+            $resources[$cat_id][$res_k]['icon'] = apcu_fetch('webresources.autoico.'.$resource['link']);
+         }
+      }
+
+      ob_start();
+      echo '<div><div class="webresources-header">'.$header.'</div>';
       echo '<div class="webresources-categories">';
       foreach ($resources as $cat_id => $cat_resources) {
          echo '<div id="webresources-category-'.$cat_id.'" class="webresources-category">';
-         $cat_name = $cat_id === 0 ? 'Uncategorized' : $categories[$cat_id];
+         if (is_numeric($cat_id)) {
+            $cat_name = $cat_id === 0 ? 'Uncategorized' : $categories[$cat_id];
+         } else {
+            $cat_name = $cat_id;
+         }
          echo '<div class="webresources-category-header">'.$cat_name.'</div>';
          echo '<div class="webresources-items">';
          foreach ($cat_resources as $resource) {
             echo '<div class="webresources-item">';
             echo '<a href="'.$resource['link'].'" target="_blank">';
             echo '<div class="webresources-item-icon">';
-            $icon_type = Toolbox::isValidWebUrl($resource['icon']) ? 'image' : 'icon';
-            echo '<img src="' . $resource['icon'] . '" title="' . $resource['name'] . '" alt="' . $resource['name'] . '" style="'.($icon_type === 'image' ? 'display: block' : 'display: none').'" onerror="onWRImageLoadError(this);"/>';
+            $icon_type = PluginWebresourcesToolbox::isValidWebUrl($resource['icon']) ? 'image' : 'icon';
+            if ($icon_type === 'image') {
+               echo '<img src="' . $resource['icon'] . '" title="' . $resource['name'] . '" alt="' . $resource['name'] . '" style="' . ($icon_type === 'image' ? 'display: block' : 'display: none') . '" onerror="onWRImageLoadError(this);"/>';
+            }
 
-            if ($icon_type === 'icon' || empty($resource['icon'])) {
-               $resource['icon'] = 'fab fa-chrome';
+            if ($icon_type === 'icon' && empty($resource['icon'])) {
+               $resource['icon'] = $default_icon;
             }
             echo '<i style="color: '.$resource['color'].';" class="' . $resource['icon'] . '" title="' . $resource['name'] . '"  style="'.($icon_type === 'icon' ? 'display: block' : 'display: none').'" alt="' . $resource['name'] . '"></i>';
 
@@ -93,15 +289,74 @@ class PluginWebresourcesDashboard extends CommonGLPI {
          echo '</div></div>';
       }
       echo '</div></div>';
+      return ob_get_clean();
+   }
 
+   /**
+    * @param string $context
+    * @since 1.0.0
+    * @since 1.3.0 Accept context param. Moved content to getDashboardContent to allow easy loading over AJAX calls
+    */
+   public static function showDashboard(string $context = 'personal')
+   {
+      global $DB;
+
+      $available_contexts = self::getDashboardContexts();
+      if (!array_key_exists($context, $available_contexts)) {
+         $context = 'personal';
+      }
+      echo '<div class="webresources-toolbar">';
+      Dropdown::showFromArray('context', $available_contexts, [
+         'value'  => $context
+      ]);
+      echo '</div>';
+      echo '<div id="webresources-content">';
+      echo self::getDashboardContent($context);
+      echo '</div>';
+
+      $plugin_root = Plugin::getWebDir('webresources');
       $js = <<<JS
 function onWRImageLoadError(img) {
    const img_obj = $(img);
-   img_obj.hide();
-   const i = img_obj.parent().find('i');
-   i.show();
-   i.attr('class', 'fab fa-chrome');
+   if (!img_obj.is(":visible")) {
+      img_obj.hide();
+      const i = img_obj.parent().find('i');
+      i.show();
+      i.attr('class', 'fab fa-chrome');
+   }
 }
+$(document).ready(function() {
+   $('.webresources-toolbar select[name="context"]').on('change', function(v) {
+      const new_context = v.target.value;
+      $.ajax({
+         url: ("{$plugin_root}/ajax/refreshDashboard.php"),
+         data: {context: new_context}
+      }).success(function(data) {
+         $("#webresources-content").empty();
+         $("#webresources-content").append(data);
+         
+         const updateURLParameter = function(url, param, paramVal){
+            let newAdditionalURL = "";
+            let tempArray = url.split("?");
+            let baseURL = tempArray[0];
+            let additionalURL = tempArray[1];
+            let temp = "";
+            if (additionalURL) {
+               tempArray = additionalURL.split("&");
+               for (let i=0; i<tempArray.length; i++){
+                  if(tempArray[i].split('=')[0] != param){
+                     newAdditionalURL += temp + tempArray[i];
+                     temp = "&";
+                  }
+               }
+            }
+            const rows_txt = temp + "" + param + "=" + paramVal;
+            return baseURL + "?" + newAdditionalURL + rows_txt;
+         }
+         window.history.replaceState('', '', updateURLParameter(window.location.href, "context", new_context));
+      });
+   });
+});
 JS;
       echo Html::scriptBlock($js);
 
