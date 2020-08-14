@@ -456,7 +456,7 @@ class PluginWebresourcesResource extends CommonDBVisible implements ExtraVisibil
       echo '<span class="very_small_space">'.__('Refresh icon image', 'webresources').'</span></div>';
       echo '<div class="webresources-item">';
       echo '<div class="webresources-item-icon">';
-      $icon_type = Toolbox::isValidWebUrl($this->fields['icon']) ? 'image' : 'icon';
+      $icon_type = PluginWebresourcesToolbox::isValidWebUrl($this->fields['icon']) ? 'image' : 'icon';
       echo '<img style="display:'.($icon_type === 'image' ? 'block' : 'none').'" src="' . $this->fields['icon'] . '" title="' . $this->fields['name'] . '" alt="' . $this->fields['name'] . '"/>';
       if (empty($this->fields['icon'])) {
          $this->fields['icon'] = 'fab fa-chrome';
@@ -473,7 +473,7 @@ class PluginWebresourcesResource extends CommonDBVisible implements ExtraVisibil
       $script = <<<JS
 $(document).ready(function() {
    function isWebURL(url) {
-      const pattern = /^(?:http[s]?:\/\/(?:[^\s`!()\[\]{};'",<>?«»“”‘’+]+|[^\s`!()\[\]{};:'".,<>?«»“”‘’+]))$/iu;
+      const pattern = /^(?:http[s]?:\/\/(?:[^\s`!()\[\]{};'",<>?«»“”‘’+]+|[^\s`!()\[\]{};:'".,<>«»“”‘’+]))$/iu;
       return pattern.test(url);
    }
 

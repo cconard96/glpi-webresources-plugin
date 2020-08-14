@@ -21,13 +21,21 @@
  --------------------------------------------------------------------------
  */
 
-include ('../../../inc/includes.php');
+class PluginWebresourcesToolbox {
 
-Session::checkLoginUser();
-
-Html::header(PluginWebresourcesDashboard::getTypeName(Session::getPluralNumber()), '', 'plugins', 'PluginWebresourcesDashboard');
-
-$context = $_GET['context'] ?? 'personal';
-PluginWebresourcesDashboard::showDashboard($context);
-
-Html::footer();
+   /**
+    * Check URL validity
+    *
+    * Differs from {@link Toolbox::isValidWebUrl()} because this allows params in the URL
+    * @param string $url The URL to check
+    *
+    * @return boolean
+    */
+   public static function isValidWebUrl($url): bool {
+      $valid = preg_match(
+            "/^(?:http[s]?:\/\/(?:[^\s`!()\[\]{};'\",<>«»“”‘’+]+|[^\s`!()\[\]{};:'\".,<>«»“”‘’+]))$/iu",
+            $url
+         );
+      return $valid;
+   }
+}
