@@ -18,8 +18,42 @@
  along with Web Resources Plugin for GLPI. If not, see <http://www.gnu.org/licenses/>.
  --------------------------------------------------------------------------
  */
-.webresources-toolbar {
+#page .webresources-toolbar {
   margin-bottom: 10px;
+  font-size: 14px;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  background-color: #fbfbfb;
+  border: 1px solid #d6d6d6;
+  /** The select style here is just to prevent jarring changes between page load and when it gets converted to a select2. */
+}
+#page .webresources-toolbar .select2 {
+  min-width: 150px;
+}
+#page .webresources-toolbar .select2-selection {
+  height: 30px;
+}
+#page .webresources-toolbar .select2-selection .select2-selection__rendered {
+  font-size: 13px;
+  line-height: 29px;
+}
+#page .webresources-toolbar .select2-selection .select2-selection__arrow {
+  height: 25px;
+}
+#page .webresources-toolbar select {
+  height: 30px;
+  font-size: 13px;
+  line-height: 29px;
+  min-width: 150px;
+  text-align-last: center;
+}
+#page .webresources-toolbar input[type=text][name=search]:not([type=submit]):not([type=button]) {
+  flex: 1 0 auto;
+  border-radius: unset;
+  background-color: white !important;
+  padding: 5px 10px;
+  font-size: 13px;
 }
 
 .webresources-header {

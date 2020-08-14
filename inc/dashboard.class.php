@@ -326,6 +326,9 @@ class PluginWebresourcesDashboard extends CommonGLPI {
       Dropdown::showFromArray('context', $available_contexts, [
          'value'  => $context
       ]);
+      echo Html::input('search', [
+         'placeholder'  => __('Search')
+      ]);
       echo '</div>';
       echo '<div id="webresources-content">';
       echo self::getDashboardContent($context);
@@ -371,7 +374,33 @@ $(document).ready(function() {
             return baseURL + "?" + newAdditionalURL + rows_txt;
          }
          window.history.replaceState('', '', updateURLParameter(window.location.href, "context", new_context));
+         applySearchFilters($('.webresources-toolbar input[name="search"]').get(0));
       });
+   });
+   const applySearchFilters = function(search_el) {
+      const items = $('.webresources-item');
+      const search_filter = search_el.value.toLowerCase();
+      items.each(function(i, v) {
+         if (v.textContent.toLowerCase().includes(search_filter)) {
+            $(v).show();
+         } else {
+            $(v).hide();
+         }
+      });
+      const categories = $('.webresources-category');
+      categories.each(function(i, v) {
+         const cat = $(v);
+         if (cat.find('.webresources-item').filter(function(i2, f) {
+            return $(f).css('display') !== 'none';
+         }).length === 0) {
+            cat.hide();
+         } else {
+            cat.show();
+         }
+      });
+   }
+   $('.webresources-toolbar input[name="search"]').on('keyup', function() {
+      applySearchFilters(this);
    });
 });
 JS;
