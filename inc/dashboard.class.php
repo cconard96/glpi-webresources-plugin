@@ -91,21 +91,29 @@ class PluginWebresourcesDashboard extends CommonGLPI {
    {
       global $DB;
 
-      $category = Supplier::getTypeName(Session::getPluralNumber());
+      $types_iterator = $DB->request([
+         'SELECT' => ['id', 'name'],
+         'FROM'   => SupplierType::getTable()
+      ]);
+      $types = [
+         0  => __('Uncategorized', 'webresources')
+      ];
+      while ($data = $types_iterator->next()) {
+         $types[$data['id']] = $data['name'];
+      }
       $iterator = $DB->request([
-         'SELECT' => ['name', 'website'],
+         'SELECT' => ['name', 'website', 'suppliertypes_id'],
          'FROM'   => Supplier::getTable()
       ] + getEntitiesRestrictCriteria());
-      $resources = [
-         $category => []
-      ];
+      $resources = [];
       if (!Supplier::canView()) {
          return $resources;
       }
 
       while($data = $iterator->next()) {
          if (!empty($data['website'])) {
-            $resources[$category][] = [
+            $suppliertype_name = $types[$data['suppliertypes_id']];
+            $resources[$suppliertype_name][] = [
                'name' => $data['name'],
                'link' => $data['website'],
                'color' => '#000000',
@@ -121,10 +129,17 @@ class PluginWebresourcesDashboard extends CommonGLPI {
    {
       global $DB;
 
-      $category = Appliance::getTypeName(Session::getPluralNumber());
-      $resources = [
-         $category => []
+      $types_iterator = $DB->request([
+         'SELECT' => ['id', 'name'],
+         'FROM'   => ApplianceType::getTable()
+      ]);
+      $types = [
+         0  => __('Uncategorized', 'webresources')
       ];
+      while ($data = $types_iterator->next()) {
+         $types[$data['id']] = $data['name'];
+      }
+      $resources = [];
       if (!Appliance::canView()) {
          return $resources;
       }
@@ -133,7 +148,7 @@ class PluginWebresourcesDashboard extends CommonGLPI {
          return $resources;
       }
       $iterator = $DB->request([
-         'SELECT' => ['name', 'address', 'backoffice'],
+         'SELECT' => ['name', 'address', 'backoffice', 'appliancetypes_id'],
          'FROM'   => PluginWebapplicationsAppliance::getTable(),
          'JOIN'   => [
             Appliance::getTable() => [
@@ -146,8 +161,9 @@ class PluginWebresourcesDashboard extends CommonGLPI {
       ] + getEntitiesRestrictCriteria());
       $resources = [];
       while($data = $iterator->next()) {
+         $appliancetype_name = $types[$data['appliancetypes_id']];
          if (!empty($data['address'])) {
-            $resources[$category][] = [
+            $resources[$appliancetype_name][] = [
                'name' => $data['name'],
                'link' => $data['address'],
                'color' => '#000000',
@@ -155,7 +171,7 @@ class PluginWebresourcesDashboard extends CommonGLPI {
             ];
          }
          if (!empty($data['backoffice'])) {
-            $resources[$category][] = [
+            $resources[$appliancetype_name][] = [
                'name' => $data['name'] . ' (Management)',
                'link' => $data['backoffice'],
                'color' => '#000000',
@@ -173,7 +189,7 @@ class PluginWebresourcesDashboard extends CommonGLPI {
 
       $category = Entity::getTypeName(Session::getPluralNumber());
       $iterator = $DB->request([
-            'SELECT' => ['name', 'website'],
+            'SELECT' => ['completename', 'website'],
             'FROM'   => Entity::getTable()
          ] + getEntitiesRestrictCriteria());
       $resources = [
@@ -186,7 +202,7 @@ class PluginWebresourcesDashboard extends CommonGLPI {
       while($data = $iterator->next()) {
          if (!empty($data['website'])) {
             $resources[$category][] = [
-               'name'   => $data['name'],
+               'name'   => $data['completename'],
                'link'   => $data['website'],
                'color'  => '#000000',
                'icon'   => '@auto'
@@ -212,33 +228,34 @@ class PluginWebresourcesDashboard extends CommonGLPI {
          case 'suppliers':
             $default_icon = Supplier::getIcon();
             $resources = self::getSupplierResources();
+            $dashboard_header = Supplier::getTypeName(Session::getPluralNumber());
             break;
          case 'appliances':
             $default_icon = Appliance::getIcon();
             $resources = self::getApplianceResources();
+            $dashboard_header = Appliance::getTypeName(Session::getPluralNumber());
             break;
          case 'entities':
             $default_icon = Entity::getIcon();
             $resources = self::getEntityResources();
+            $dashboard_header = Entity::getTypeName(Session::getPluralNumber());
             break;
          case 'personal':
          default:
             $default_icon = 'fab fa-chrome';
             $resources = self::getPersonalResources();
+            $dashboard_header = PluginWebresourcesResource::getTypeName(Session::getPluralNumber());
       }
 
       $categories = [];
       if ($context === 'personal') {
          $cat_iterator = $DB->request([
             'SELECT' => ['id', 'name'],
-            'FROM'   => PluginWebresourcesCategory::getTable(),
+            'FROM' => PluginWebresourcesCategory::getTable(),
          ]);
          while ($cat = $cat_iterator->next()) {
             $categories[$cat['id']] = $cat['name'];
          }
-         $header = PluginWebresourcesResource::getTypeName(Session::getPluralNumber());
-      } else {
-         $header = array_key_first($resources);
       }
 
       // Fetch and Cache auto-generated icons
@@ -256,12 +273,12 @@ class PluginWebresourcesDashboard extends CommonGLPI {
       }
 
       ob_start();
-      echo '<div><div class="webresources-header">'.$header.'</div>';
+      echo '<div><div class="webresources-header">'.$dashboard_header.'</div>';
       echo '<div class="webresources-categories">';
       foreach ($resources as $cat_id => $cat_resources) {
          echo '<div id="webresources-category-'.$cat_id.'" class="webresources-category">';
          if (is_numeric($cat_id)) {
-            $cat_name = $cat_id === 0 ? 'Uncategorized' : $categories[$cat_id];
+            $cat_name = $cat_id === 0 ? __('Uncategorized', 'webresources') : $categories[$cat_id];
          } else {
             $cat_name = $cat_id;
          }

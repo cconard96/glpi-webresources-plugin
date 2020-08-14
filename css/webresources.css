@@ -18,6 +18,10 @@
  along with Web Resources Plugin for GLPI. If not, see <http://www.gnu.org/licenses/>.
  --------------------------------------------------------------------------
  */
+.webresources-toolbar {
+  margin-bottom: 10px;
+}
+
 .webresources-header {
   font-size: 1.4em;
   margin-bottom: 15px;
