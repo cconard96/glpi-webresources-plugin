@@ -35,6 +35,9 @@ class PluginWebresourcesScraper
       self::setContext();
 
       $headers = @get_headers($url, true);
+      if ($headers === false) {
+         return false;
+      }
       $headers = array_change_key_case($headers);
 
       // Flatten redirects
@@ -109,6 +112,9 @@ class PluginWebresourcesScraper
       }
 
       $headers = self::retrieveHeader($url);
+      if ($headers === false) {
+         return false;
+      }
 
       $status_lines = array_filter($headers, static function ($key) {
          return is_int($key);
@@ -165,17 +171,20 @@ class PluginWebresourcesScraper
       }
 
       $html = @file_get_contents("{$resolved_url}/");
+      return self::getIconsFromDOM($html, $url);
+   }
+
+   private static function getIconsFromDOM($html, $url): array
+   {
       preg_match('!<head.*?>.*</head>!ims', $html, $match);
 
-      if (empty($match) || count($match) == 0) {
-         return [];
-      }
+      $good_html = !(empty($match) || count($match) === 0);
 
       $head = $match[0];
 
       $icons = [];
 
-      if (extension_loaded('dom')) {
+      if ($good_html && extension_loaded('dom')) {
          $dom = new DOMDocument();
 
          if (@$dom->loadHTML($head)) {
@@ -230,6 +239,58 @@ class PluginWebresourcesScraper
       }
 
       return $icons;
+   }
+
+   public static function getMultiple(array $urls): array
+   {
+      if (empty($urls)) {
+         return [];
+      }
+      $results = [];
+      $url_map = [];
+      foreach ($urls as &$url) {
+         $results = [
+            $url => []
+         ];
+         $original_url = $url;
+         $url = self::resolveUrl($url);
+         $url_map[$url] = $original_url;
+      }
+      unset($url);
+
+      $good_urls = array_filter($urls, static function ($u) {
+         return !empty($u);
+      });
+      $main_curl = curl_multi_init();
+      $child_curls = [];
+
+      $url_count = count($good_urls);
+      for ($i = 0; $i < $url_count; $i++) {
+         $child_curls[$i] = curl_init($good_urls[$i]);
+         curl_setopt($child_curls[$i], CURLOPT_RETURNTRANSFER, true);
+         curl_setopt($child_curls[$i], CURLOPT_TIMEOUT, 5);
+         curl_setopt($child_curls[$i], CURLOPT_CONNECTTIMEOUT, 5);
+         curl_multi_add_handle($main_curl, $child_curls[$i]);
+      }
+
+      do {
+         curl_multi_exec($main_curl, $running);
+      } while ($running > 0);
+
+      $html_contents = [];
+      for ($i = 0; $i < $url_count; $i++) {
+         if (curl_getinfo($child_curls[$i],  CURLINFO_HTTP_CODE) !== 200) {
+            continue;
+         }
+         $html_contents[$i] = curl_multi_getcontent($child_curls[$i]);
+      }
+      curl_multi_close($main_curl);
+
+      foreach ($html_contents as $i => $html) {
+         $url = $good_urls[$i];
+         $results[$url_map[$url]] = self::getIconsFromDOM($html, $url);
+      }
+      return $results;
    }
 
    private static function getFavicon(string $url): array

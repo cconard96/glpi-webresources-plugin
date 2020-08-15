@@ -49,19 +49,21 @@ class PluginWebresourcesDashboard extends CommonGLPI {
    }
 
    /**
+    * @param bool $skip_rights
+    * @return array
     * @since 1.3.0
     */
-   public static function getDashboardContexts()
+   public static function getDashboardContexts(bool $skip_rights = false)
    {
       $contexts = [
          'personal'  => __('My resources', 'webresources')
       ];
 
-      if (Supplier::canView()) {
+      if ($skip_rights || Supplier::canView()) {
          $contexts['suppliers'] = Supplier::getTypeName(Session::getPluralNumber());
       }
 
-      if (Entity::canView()) {
+      if ($skip_rights || Entity::canView()) {
          $contexts['entities'] = Entity::getTypeName(Session::getPluralNumber());
       }
 
@@ -87,7 +89,7 @@ class PluginWebresourcesDashboard extends CommonGLPI {
       return $resources;
    }
 
-   private static function getSupplierResources()
+   private static function getSupplierResources(bool $skip_rights = false)
    {
       global $DB;
 
@@ -106,7 +108,7 @@ class PluginWebresourcesDashboard extends CommonGLPI {
          'FROM'   => Supplier::getTable()
       ] + getEntitiesRestrictCriteria());
       $resources = [];
-      if (!Supplier::canView()) {
+      if (!$skip_rights && !Supplier::canView()) {
          return $resources;
       }
 
@@ -125,7 +127,7 @@ class PluginWebresourcesDashboard extends CommonGLPI {
       return $resources;
    }
 
-   private static function getApplianceResources()
+   private static function getApplianceResources(bool $skip_rights = false)
    {
       global $DB;
 
@@ -140,7 +142,7 @@ class PluginWebresourcesDashboard extends CommonGLPI {
          $types[$data['id']] = $data['name'];
       }
       $resources = [];
-      if (!Appliance::canView()) {
+      if (!$skip_rights && !Appliance::canView()) {
          return $resources;
       }
 
@@ -183,7 +185,7 @@ class PluginWebresourcesDashboard extends CommonGLPI {
       return $resources;
    }
 
-   private static function getEntityResources()
+   private static function getEntityResources(bool $skip_rights = false)
    {
       global $DB;
 
@@ -195,7 +197,7 @@ class PluginWebresourcesDashboard extends CommonGLPI {
       $resources = [
          $category => []
       ];
-      if (!Entity::canView()) {
+      if (!$skip_rights && !Entity::canView()) {
          return $resources;
       }
 
@@ -213,13 +215,58 @@ class PluginWebresourcesDashboard extends CommonGLPI {
       return $resources;
    }
 
+   private static function populateAutoIcons(&$resources, bool $regen_icons = false): void
+   {
+      global $GLPI_CACHE;
+
+      // Fetch and Cache auto-generated icons
+      $cache = $regen_icons ? null : $GLPI_CACHE->get('webresources.autoico');
+      $cache = $cache === null ? [] : json_decode($cache, true);
+
+      $to_fetch = [];
+      foreach ($resources as $cat_id => $cat_resources) {
+         foreach ($cat_resources as $res_k => $resource) {
+            if ($resource['icon'] !== '@auto') {
+               continue;
+            }
+
+            $key = md5($resource['link']);
+            if ($regen_icons || !isset($cache[$key])) {
+               $to_fetch[] = $resource['link'];
+            }
+         }
+      }
+      $fetched = PluginWebresourcesScraper::getMultiple($to_fetch);
+      foreach ($fetched as $url => $ico) {
+         $key = md5($url);
+         $fetched_ico = reset($ico);
+         if (!is_array($fetched_ico)) {
+            continue;
+         }
+         $cache[$key] = $fetched_ico['href'];
+      }
+      foreach ($resources as $cat_id => $cat_resources) {
+         foreach ($cat_resources as $res_k => $resource) {
+            if ($resource['icon'] !== '@auto') {
+               continue;
+            }
+            $key = md5($resource['link']);
+            $resources[$cat_id][$res_k]['icon'] = $cache[$key] ?? null;
+         }
+      }
+
+      // Save Cache
+      $GLPI_CACHE->set('webresources.autoico', json_encode($cache));
+   }
+
    /**
     * @param string $context
     * @param bool $regen_icons If true, automatic icons (Dynamic resources based on other items like Suppliers) are regenerated
+    * @param bool $skip_rights
     * @return string
     * @since 1.3.0
     */
-   public static function getDashboardContent(string $context = 'personal', bool $regen_icons = false): string
+   public static function getDashboardContent(string $context = 'personal', bool $regen_icons = false, bool $skip_rights = false): string
    {
       global $DB;
 
@@ -227,17 +274,17 @@ class PluginWebresourcesDashboard extends CommonGLPI {
       {
          case 'suppliers':
             $default_icon = Supplier::getIcon();
-            $resources = self::getSupplierResources();
+            $resources = self::getSupplierResources($skip_rights);
             $dashboard_header = Supplier::getTypeName(Session::getPluralNumber());
             break;
          case 'appliances':
             $default_icon = Appliance::getIcon();
-            $resources = self::getApplianceResources();
+            $resources = self::getApplianceResources($skip_rights);
             $dashboard_header = Appliance::getTypeName(Session::getPluralNumber());
             break;
          case 'entities':
             $default_icon = Entity::getIcon();
-            $resources = self::getEntityResources();
+            $resources = self::getEntityResources($skip_rights);
             $dashboard_header = Entity::getTypeName(Session::getPluralNumber());
             break;
          case 'personal':
@@ -258,19 +305,7 @@ class PluginWebresourcesDashboard extends CommonGLPI {
          }
       }
 
-      // Fetch and Cache auto-generated icons
-      foreach ($resources as $cat_id => $cat_resources) {
-         foreach ($cat_resources as $res_k => $resource) {
-            if ($resource['icon'] !== '@auto') {
-               continue;
-            }
-            if ($regen_icons || !apcu_exists('webresources.autoico.'.$resource['link'])) {
-               $ico = PluginWebresourcesScraper::get($resource['link']);
-               apcu_store('webresources.autoico.'.$resource['link'], reset($ico)['href']);
-            }
-            $resources[$cat_id][$res_k]['icon'] = apcu_fetch('webresources.autoico.'.$resource['link']);
-         }
-      }
+      self::populateAutoIcons($resources, $regen_icons);
 
       ob_start();
       echo '<div><div class="webresources-header">'.$dashboard_header.'</div>';
@@ -290,13 +325,13 @@ class PluginWebresourcesDashboard extends CommonGLPI {
             echo '<div class="webresources-item-icon">';
             $icon_type = PluginWebresourcesToolbox::isValidWebUrl($resource['icon']) ? 'image' : 'icon';
             if ($icon_type === 'image') {
-               echo '<img src="' . $resource['icon'] . '" title="' . $resource['name'] . '" alt="' . $resource['name'] . '" style="' . ($icon_type === 'image' ? 'display: block' : 'display: none') . '" onerror="onWRImageLoadError(this);"/>';
+               echo '<img src="' . $resource['icon'] . '" title="' . $resource['name'] . '" alt="' . $resource['name'] . '" style="' . ($icon_type === 'image' ? 'display: block' : 'display: none') . '" onerror="onWRImageLoadError(this);" data-fallback="'.$default_icon.'"/>';
             }
 
-            if ($icon_type === 'icon' && empty($resource['icon'])) {
+            if ($icon_type === 'image' || ($icon_type === 'icon' && empty($resource['icon']))) {
                $resource['icon'] = $default_icon;
             }
-            echo '<i style="color: '.$resource['color'].';" class="' . $resource['icon'] . '" title="' . $resource['name'] . '"  style="'.($icon_type === 'icon' ? 'display: block' : 'display: none').'" alt="' . $resource['name'] . '"></i>';
+            echo '<i style="color: '.$resource['color'].';'.($icon_type === 'icon' ? 'display: block' : 'display: none').'" class="' . $resource['icon'] . '" title="' . $resource['name'] . '" alt="' . $resource['name'] . '"></i>';
 
             echo '</div>';
             echo '<div class="webresources-item-title">'.$resource['name'].'</div>';
@@ -316,8 +351,6 @@ class PluginWebresourcesDashboard extends CommonGLPI {
     */
    public static function showDashboard(string $context = 'personal')
    {
-      global $DB;
-
       $available_contexts = self::getDashboardContexts();
       if (!array_key_exists($context, $available_contexts)) {
          $context = 'personal';
@@ -338,11 +371,12 @@ class PluginWebresourcesDashboard extends CommonGLPI {
       $js = <<<JS
 function onWRImageLoadError(img) {
    const img_obj = $(img);
-   if (!img_obj.is(":visible")) {
+   if (img_obj.is(":visible")) {
       img_obj.hide();
       const i = img_obj.parent().find('i');
       i.show();
-      i.attr('class', 'fab fa-chrome');
+      const fallback = img_obj.data('fallback') ?? 'fab fa-chrome';
+      i.attr('class', fallback);
    }
 }
 $(document).ready(function() {

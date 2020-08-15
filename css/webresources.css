@@ -89,13 +89,7 @@
   text-align: center;
   font-size: 1.2em;
 }
-.webresources-categories .webresources-category .webresources-item .webresources-item-icon img {
-  width: 64px;
-  height: 64px;
-  margin-top: 5px;
-  margin-bottom: 5px;
-}
-.webresources-categories .webresources-category .webresources-item .webresources-item-icon i.fas, .webresources-categories .webresources-category .webresources-item .webresources-item-icon i.far, .webresources-categories .webresources-category .webresources-item .webresources-item-icon i.fab {
+.webresources-categories .webresources-category .webresources-item .webresources-item-icon img, .webresources-categories .webresources-category .webresources-item .webresources-item-icon i.fas, .webresources-categories .webresources-category .webresources-item .webresources-item-icon i.far, .webresources-categories .webresources-category .webresources-item .webresources-item-icon i.fab {
   font-size: 64px;
   width: 64px;
   height: 64px;
