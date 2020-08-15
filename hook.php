@@ -110,6 +110,14 @@ function plugin_webresources_install()
       $DB->queryOrDie($query, 'Error creating Web Resource auto-icon table' . $DB->error());
    }
 
+   if (!count(Config::getConfigurationValues('plugin:Webresources'))) {
+      Config::setConfigurationValues('plugin:Webresources', [
+         'config_class'    => PluginWebresourcesConfig::class,
+         'use_duckduckgo'  => 0,
+         'use_google'      => 0,
+      ]);
+   }
+
    $migration = new Migration(PLUGIN_WEBRESOURCES_VERSION);
    if ($clean_install) {
       $migration->addRight(PluginWebresourcesResource::$rightname);
