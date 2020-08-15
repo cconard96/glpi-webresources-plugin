@@ -99,6 +99,17 @@ function plugin_webresources_install()
       $DB->queryOrDie($query, 'Error creating Web Resource Category table' . $DB->error());
    }
 
+   if (!$DB->tableExists('glpi_plugin_webresources_autoicons')) {
+      $query = "CREATE TABLE `glpi_plugin_webresources_autoicons` (
+                  `itemtype` varchar(100) NOT NULL,
+                  `items_id` int(11) NOT NULL,
+                  `icon` varchar(255) DEFAULT NULL,
+                  `color` varchar(16) NOT NULL DEFAULT '#000000',
+                PRIMARY KEY (`itemtype`, `items_id`)
+               ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
+      $DB->queryOrDie($query, 'Error creating Web Resource auto-icon table' . $DB->error());
+   }
+
    $migration = new Migration(PLUGIN_WEBRESOURCES_VERSION);
    if ($clean_install) {
       $migration->addRight(PluginWebresourcesResource::$rightname);
@@ -111,27 +122,20 @@ function plugin_webresources_uninstall()
 {
    global $DB;
 
-   $res_table = PluginWebresourcesResource::getTable();
-   $res_entity_table = PluginWebresourcesResource_Entity::getTable();
-   $res_profile_table = PluginWebresourcesResource_Profile::getTable();
-   $res_group_table = PluginWebresourcesResource_Group::getTable();
-   $res_user_table = PluginWebresourcesResource_User::getTable();
+   $tables = [PluginWebresourcesResource::getTable(), PluginWebresourcesResource_Entity::getTable(),
+      PluginWebresourcesResource_Profile::getTable(), PluginWebresourcesResource_Group::getTable(),
+      PluginWebresourcesResource_User::getTable(), PluginWebresourcesCategory::getTable(), 'glpi_plugin_webresources_autoicons'];
 
-   if ($DB->tableExists($res_table)) {
-      $DB->queryOrDie('DROP TABLE'.$DB::quoteName($res_table));
+   foreach ($tables as $table) {
+      if ($DB->tableExists($table)) {
+         $DB->queryOrDie('DROP TABLE'.$DB::quoteName($table));
+      }
    }
-   if ($DB->tableExists($res_entity_table)) {
-      $DB->queryOrDie('DROP TABLE'.$DB::quoteName($res_entity_table));
-   }
-   if ($DB->tableExists($res_profile_table)) {
-      $DB->queryOrDie('DROP TABLE'.$DB::quoteName($res_profile_table));
-   }
-   if ($DB->tableExists($res_group_table)) {
-      $DB->queryOrDie('DROP TABLE'.$DB::quoteName($res_group_table));
-   }
-   if ($DB->tableExists($res_user_table)) {
-      $DB->queryOrDie('DROP TABLE'.$DB::quoteName($res_user_table));
-   }
+   Config::deleteConfigurationValues('plugin:Webresources', [
+      'config_class',
+      'use_duckduckgo',
+      'use_google'
+   ]);
 	return true;
 }
 
@@ -139,3 +143,58 @@ function plugin_webresources_getDropdown() {
    return ['PluginWebresourcesCategory' => PluginWebresourcesCategory::getTypeName(2)];
 }
 
+function plugin_webresources_showPostItemForm(array $params)
+{
+   global $DB;
+
+   static $supported_types = [Entity::class, Supplier::class];
+   $item = $params['item'];
+   if (in_array($item::getType(), $supported_types, true)) {
+      $iterator = $DB->request([
+         'SELECT' => ['icon', 'color'],
+         'FROM'   => 'glpi_plugin_webresources_autoicons',
+         'WHERE'  => [
+            'itemtype'  => $item::getType(),
+            'items_id'  => $item->getID()
+         ]
+      ]);
+      $ico = '';
+      $color = '#000000';
+      if (count($iterator)) {
+         $data = $iterator->next();
+         $ico = $data['icon'];
+         $color = $data['color'];
+      }
+      $out = '<tr><td>'.__('Icon', 'webresources').'</td><td>';
+      $out .= Html::input('webresources_icon', [
+         'value'  => $ico
+      ]);
+      $out .= '</td><td>'.__('Icon color', 'webresources').'</td><td>';
+      $out .= Html::showColorField('webresources_color', [
+         'value'  => $color,
+         'display'   => false
+      ]);
+      $out .= '</td></tr>';
+      echo $out;
+   }
+}
+
+function plugin_webresources_preupdateitem(CommonDBTM $item)
+{
+   global $DB;
+
+   static $supported_types = [Entity::class, Supplier::class, Appliance::class];
+   if (in_array($item::getType(), $supported_types, true)) {
+      $DB->updateOrInsert('glpi_plugin_webresources_autoicons', [
+         'itemtype'  => $item::getType(),
+         'items_id'  => $item->getID(),
+         'icon'      => $item->input['webresources_icon'],
+         'color'     => $item->input['webresources_color']
+      ], [
+         'itemtype'  => $item::getType(),
+         'items_id'  => $item->getID(),
+      ]);
+      unset($item->input['webresources_icon']);
+      unset($item->input['webresources_color']);
+   }
+}

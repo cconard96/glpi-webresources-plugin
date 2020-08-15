@@ -104,7 +104,7 @@ class PluginWebresourcesDashboard extends CommonGLPI {
          $types[$data['id']] = $data['name'];
       }
       $iterator = $DB->request([
-         'SELECT' => ['name', 'website', 'suppliertypes_id'],
+         'SELECT' => [Supplier::getTable().'.id AS id', 'name', 'website', 'suppliertypes_id'],
          'FROM'   => Supplier::getTable()
       ] + getEntitiesRestrictCriteria());
       $resources = [];
@@ -114,12 +114,28 @@ class PluginWebresourcesDashboard extends CommonGLPI {
 
       while($data = $iterator->next()) {
          if (!empty($data['website'])) {
+            $ico_iterator = $DB->request([
+               'SELECT' => ['icon', 'color'],
+               'FROM'   => 'glpi_plugin_webresources_autoicons',
+               'WHERE'  => [
+                  'itemtype'  => Supplier::class,
+                  'items_id'  => $data['id']
+               ]
+            ]);
+            if (count($ico_iterator)) {
+               $icodata = $ico_iterator->next();
+               $ico = empty($icodata['icon']) ? '@auto' : $icodata['icon'];
+               $color = $icodata['color'];
+            } else {
+               $ico = '@auto';
+               $color = '#000000';
+            }
             $suppliertype_name = $types[$data['suppliertypes_id']];
             $resources[$suppliertype_name][] = [
                'name' => $data['name'],
                'link' => $data['website'],
-               'color' => '#000000',
-               'icon' => '@auto'
+               'color' => $color,
+               'icon' => $ico
             ];
          }
       }
@@ -191,7 +207,7 @@ class PluginWebresourcesDashboard extends CommonGLPI {
 
       $category = Entity::getTypeName(Session::getPluralNumber());
       $iterator = $DB->request([
-            'SELECT' => ['completename', 'website'],
+            'SELECT' => [Entity::getTable().'.id AS id', 'completename', 'website'],
             'FROM'   => Entity::getTable()
          ] + getEntitiesRestrictCriteria());
       $resources = [
@@ -203,11 +219,27 @@ class PluginWebresourcesDashboard extends CommonGLPI {
 
       while($data = $iterator->next()) {
          if (!empty($data['website'])) {
+            $ico_iterator = $DB->request([
+               'SELECT' => ['icon', 'color'],
+               'FROM'   => 'glpi_plugin_webresources_autoicons',
+               'WHERE'  => [
+                  'itemtype'  => Entity::class,
+                  'items_id'  => $data['id']
+               ]
+            ]);
+            if (count($ico_iterator)) {
+               $icodata = $ico_iterator->next();
+               $ico = empty($icodata['icon']) ? '@auto' : $icodata['icon'];
+               $color = $icodata['color'];
+            } else {
+               $ico = '@auto';
+               $color = '#000000';
+            }
             $resources[$category][] = [
                'name'   => $data['completename'],
                'link'   => $data['website'],
-               'color'  => '#000000',
-               'icon'   => '@auto'
+               'color'  => $color,
+               'icon'   => $ico
             ];
          }
       }
@@ -233,6 +265,23 @@ class PluginWebresourcesDashboard extends CommonGLPI {
             $key = md5($resource['link']);
             if ($regen_icons || !isset($cache[$key])) {
                $to_fetch[] = $resource['link'];
+            }
+         }
+      }
+
+      // Experimental Feature for baking generated icons to a json file. Not present in release unless manually created.
+      if (file_exists('../resources/favicon_map.json')) {
+         $baked_favicon_map = json_decode(file_get_contents('../resources/favicon_map.json'), true);
+         foreach ($to_fetch as $i => $url) {
+            $key = md5($url);
+            $host = parse_url($url, PHP_URL_HOST);
+            foreach ($baked_favicon_map as $h => $ico) {
+               $pattern = "/$h/iu";
+               if (preg_match($pattern, $host)) {
+                  $cache[$key] = $ico;
+                  unset($to_fetch[$i]);
+                  continue;
+               }
             }
          }
       }

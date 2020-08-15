@@ -34,6 +34,11 @@ function plugin_init_webresources()
    }
    Plugin::registerClass('PluginWebresourcesProfile', ['addtabon' => ['Profile']]);
    Plugin::registerClass('PluginWebresourcesConfig', ['addtabon' => 'Config']);
+   $PLUGIN_HOOKS['post_item_form']['webresources'] = 'plugin_webresources_showPostItemForm';
+   $PLUGIN_HOOKS['pre_item_update']['webresources'] = [
+      'Supplier'  => 'plugin_webresources_preupdateitem',
+      'Entity'    => 'plugin_webresources_preupdateitem',
+   ];
    $PLUGIN_HOOKS['add_css']['webresources'][] = 'css/webresources.css';
 }
 
