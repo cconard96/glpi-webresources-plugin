@@ -33,6 +33,7 @@ function plugin_init_webresources()
       $PLUGIN_HOOKS['menu_toadd']['webresources'] = ['plugins' => 'PluginWebresourcesDashboard'];
    }
    Plugin::registerClass('PluginWebresourcesProfile', ['addtabon' => ['Profile']]);
+   Plugin::registerClass('PluginWebresourcesConfig', ['addtabon' => 'Config']);
    $PLUGIN_HOOKS['add_css']['webresources'][] = 'css/webresources.css';
 }
 

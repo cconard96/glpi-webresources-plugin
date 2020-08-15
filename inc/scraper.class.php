@@ -180,11 +180,10 @@ class PluginWebresourcesScraper
 
       $good_html = !(empty($match) || count($match) === 0);
 
-      $head = $match[0];
-
       $icons = [];
 
       if ($good_html && extension_loaded('dom')) {
+         $head = $match[0];
          $dom = new DOMDocument();
 
          if (@$dom->loadHTML($head)) {
@@ -202,6 +201,10 @@ class PluginWebresourcesScraper
                         $href = substr($href, 1);
                      }
                      $href = $url . '/' . $href;
+                  }
+
+                  if (self::info($href)['status'] != '200') {
+                     continue;
                   }
 
                   $size = $link->hasAttribute('sizes') ? $link->getAttribute('sizes') : [];
@@ -246,6 +249,8 @@ class PluginWebresourcesScraper
       if (empty($urls)) {
          return [];
       }
+      // Reset numeric keys
+      $urls = array_values($urls);
       $results = [];
       $url_map = [];
       foreach ($urls as &$url) {
@@ -261,6 +266,7 @@ class PluginWebresourcesScraper
       $good_urls = array_filter($urls, static function ($u) {
          return !empty($u);
       });
+
       $main_curl = curl_multi_init();
       $child_curls = [];
 
@@ -289,7 +295,18 @@ class PluginWebresourcesScraper
       foreach ($html_contents as $i => $html) {
          $url = $good_urls[$i];
          $results[$url_map[$url]] = self::getIconsFromDOM($html, $url);
+         if (empty($results[$url_map[$url]])) {
+            if (PluginWebresourcesConfig::getConfig()['use_duckduckgo']) {
+               $results[$url_map[$url]][] = self::getFaviconFromDuckDuckGo($url);
+            }
+         }
+         if (empty($results[$url_map[$url]])) {
+            if (PluginWebresourcesConfig::getConfig()['use_google']) {
+               $results[$url_map[$url]][] = self::getFaviconFromGoogle($url);
+            }
+         }
       }
+
       return $results;
    }
 
@@ -298,6 +315,54 @@ class PluginWebresourcesScraper
 
       // Try /favicon.ico first.
       $info = self::info("{$url}/favicon.ico");
+      if ($info['status'] == '200') {
+         $favicon = $info['url'];
+      }
+
+      // Make sure the favicon is an absolute URL.
+      if (isset($favicon) && filter_var($favicon, FILTER_VALIDATE_URL) === false) {
+         $favicon = $url . '/' . $favicon;
+      }
+
+      if (isset($favicon)) {
+         return [
+            'type' => self::ICONTYPE_FAVICON,
+            'href' => $favicon,
+            'size' => []
+         ];
+      }
+
+      return [];
+   }
+
+   private static function getFaviconFromDuckDuckGo(string $url): array
+   {
+      $host = parse_url($url,PHP_URL_HOST);
+      $info = self::info("https://icons.duckduckgo.com/ip3/{$host}.ico");
+      if ($info['status'] == '200') {
+         $favicon = $info['url'];
+      }
+
+      // Make sure the favicon is an absolute URL.
+      if (isset($favicon) && filter_var($favicon, FILTER_VALIDATE_URL) === false) {
+         $favicon = $url . '/' . $favicon;
+      }
+
+      if (isset($favicon)) {
+         return [
+            'type' => self::ICONTYPE_FAVICON,
+            'href' => $favicon,
+            'size' => []
+         ];
+      }
+
+      return [];
+   }
+
+   private static function getFaviconFromGoogle(string $url): array
+   {
+      $host = parse_url($url,PHP_URL_HOST);
+      $info = self::info("https://www.google.com/s2/favicons?domain={$host}");
       if ($info['status'] == '200') {
          $favicon = $info['url'];
       }
