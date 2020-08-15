@@ -198,3 +198,16 @@ function plugin_webresources_preupdateitem(CommonDBTM $item)
       unset($item->input['webresources_color']);
    }
 }
+
+function plugin_webresources_preItemPurge(CommonDBTM $item)
+{
+   global $DB;
+
+   static $supported_types = [Entity::class, Supplier::class, Appliance::class];
+   if (in_array($item::getType(), $supported_types, true)) {
+      $DB->delete('glpi_plugin_webresources_autoicons', [
+         'itemtype'  => $item::getType(),
+         'items_id'  => $item->getID(),
+      ]);
+   }
+}

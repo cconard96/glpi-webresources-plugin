@@ -39,6 +39,7 @@ function plugin_init_webresources()
       'Supplier'  => 'plugin_webresources_preupdateitem',
       'Entity'    => 'plugin_webresources_preupdateitem',
    ];
+   $PLUGIN_HOOKS['pre_item_purge']['webresources'] = 'plugin_webresources_preItemPurge';
    $PLUGIN_HOOKS['add_css']['webresources'][] = 'css/webresources.css';
 }
 
