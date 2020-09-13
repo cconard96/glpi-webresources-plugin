@@ -124,10 +124,10 @@ class PluginWebresourcesDashboard extends CommonGLPI {
             ]);
             if (count($ico_iterator)) {
                $icodata = $ico_iterator->next();
-               $ico = empty($icodata['icon']) ? '@auto' : $icodata['icon'];
+               $ico = empty($icodata['icon']) ? Supplier::getIcon() : $icodata['icon']; // '@auto'
                $color = $icodata['color'];
             } else {
-               $ico = '@auto';
+               $ico = Supplier::getIcon(); // '@auto'
                $color = '#000000';
             }
             $suppliertype_name = $types[$data['suppliertypes_id']];
@@ -185,7 +185,7 @@ class PluginWebresourcesDashboard extends CommonGLPI {
                'name' => $data['name'],
                'link' => $data['address'],
                'color' => '#000000',
-               'icon' => '@auto'
+               'icon' => Appliance::getIcon()
             ];
          }
          if (!empty($data['backoffice'])) {
@@ -193,7 +193,7 @@ class PluginWebresourcesDashboard extends CommonGLPI {
                'name' => $data['name'] . ' (Management)',
                'link' => $data['backoffice'],
                'color' => '#000000',
-               'icon' => '@auto'
+               'icon' => Appliance::getIcon()
             ];
          }
       }
@@ -229,10 +229,10 @@ class PluginWebresourcesDashboard extends CommonGLPI {
             ]);
             if (count($ico_iterator)) {
                $icodata = $ico_iterator->next();
-               $ico = empty($icodata['icon']) ? '@auto' : $icodata['icon'];
+               $ico = empty($icodata['icon']) ? Entity::getIcon() : $icodata['icon'];
                $color = $icodata['color'];
             } else {
-               $ico = '@auto';
+               $ico = Entity::getIcon();
                $color = '#000000';
             }
             $resources[$category][] = [
