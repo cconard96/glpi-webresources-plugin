@@ -422,7 +422,7 @@ class PluginWebresourcesResource extends CommonDBVisible implements ExtraVisibil
       echo "</td></tr>";
 
       echo "<tr class='tab_bg_1'>";
-      echo "<td>".__('Icon', 'webresourcecs')."</td><td>";
+      echo "<td>".__('Icon', 'webresources')."</td><td>";
       echo Html::input('icon', [
          'value'  => $this->fields['icon'] ?? ''
       ]);
@@ -438,7 +438,7 @@ class PluginWebresourcesResource extends CommonDBVisible implements ExtraVisibil
       echo "</td></tr>";
 
       echo "<tr class='tab_bg_1'>";
-      echo "<td>".__('Icon Color', 'webresourcecs')."</td><td>";
+      echo "<td>".__('Icon Color', 'webresources')."</td><td>";
       Html::showColorField('color', [
          'value'  => $this->fields['color'] ?? '#000000'
       ]);
