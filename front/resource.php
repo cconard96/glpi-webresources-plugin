@@ -23,6 +23,11 @@
 
 include ('../../../inc/includes.php');
 
+$plugin = new Plugin();
+if (!$plugin->isActivated('webresources')) {
+   Html::displayNotFoundError();
+}
+
 Session::checkLoginUser();
 
 Html::header(PluginWebresourcesResource::getTypeName(Session::getPluralNumber()), '', 'plugins', 'PluginWebresourcesDashboard');

@@ -25,6 +25,11 @@ use Glpi\Event;
 
 include ('../../../inc/includes.php');
 
+$plugin = new Plugin();
+if (!$plugin->isActivated('webresources')) {
+   Html::displayNotFoundError();
+}
+
 if (empty($_GET["id"])) {
    $_GET["id"] = '';
 }

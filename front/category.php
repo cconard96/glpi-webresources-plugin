@@ -23,5 +23,10 @@
 
 include ('../../../inc/includes.php');
 
+$plugin = new Plugin();
+if (!$plugin->isActivated('webresources')) {
+   Html::displayNotFoundError();
+}
+
 $dropdown = new PluginWebresourcesCategory();
 include (GLPI_ROOT . "/front/dropdown.common.php");

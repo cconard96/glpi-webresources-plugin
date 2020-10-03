@@ -22,6 +22,12 @@
  */
 
 include ('../../../inc/includes.php');
+
+$plugin = new Plugin();
+if (!$plugin->isActivated('webresources')) {
+   Html::displayNotFoundError();
+}
+
 Html::header_nocache();
 
 Session::checkLoginUser();
