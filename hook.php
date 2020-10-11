@@ -158,6 +158,9 @@ function plugin_webresources_showPostItemForm(array $params)
    static $supported_types = [Entity::class, Supplier::class];
    $item = $params['item'];
    if (in_array($item::getType(), $supported_types, true)) {
+      if ($item::getType() === 'Entity' && $_REQUEST['_glpi_tab'] !== 'Entity$main') {
+         return;
+      }
       $iterator = $DB->request([
          'SELECT' => ['icon', 'color'],
          'FROM'   => 'glpi_plugin_webresources_autoicons',
