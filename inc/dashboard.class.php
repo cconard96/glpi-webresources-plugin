@@ -369,28 +369,35 @@ class PluginWebresourcesDashboard extends CommonGLPI {
          echo '<div class="webresources-category-header">'.$cat_name.'</div>';
          echo '<div class="webresources-items">';
          foreach ($cat_resources as $resource) {
-            echo '<div class="webresources-item">';
-            echo '<a href="'.$resource['link'].'" target="_blank">';
-            echo '<div class="webresources-item-icon">';
-            $icon_type = PluginWebresourcesToolbox::isValidWebUrl($resource['icon']) ? 'image' : 'icon';
-            if ($icon_type === 'image') {
-               echo '<img src="' . $resource['icon'] . '" title="' . $resource['name'] . '" alt="' . $resource['name'] . '" style="' . ($icon_type === 'image' ? 'display: block' : 'display: none') . '" onerror="onWRImageLoadError(this);" data-fallback="'.$default_icon.'"/>';
-            }
-
-            if ($icon_type === 'image' || ($icon_type === 'icon' && empty($resource['icon']))) {
-               $resource['icon'] = $default_icon;
-            }
-            echo '<i style="color: '.$resource['color'].';'.($icon_type === 'icon' ? 'display: block' : 'display: none').'" class="' . $resource['icon'] . '" title="' . $resource['name'] . '" alt="' . $resource['name'] . '"></i>';
-
-            echo '</div>';
-            echo '<div class="webresources-item-title">'.$resource['name'].'</div>';
-            echo '</a>';
-            echo '</div>';
+            echo self::getResourceAsIcon($resource, $default_icon);
          }
          echo '</div></div>';
       }
       echo '</div></div>';
       return ob_get_clean();
+   }
+
+   private static function getResourceAsIcon(array $resource, string $default_icon = 'fab fa-chrome')
+   {
+      $html = '';
+      $html .= '<div class="webresources-item">';
+      $html .= '<a href="'.$resource['link'].'" target="_blank">';
+      $html .= '<div class="webresources-item-icon">';
+      $icon_type = PluginWebresourcesToolbox::isValidWebUrl($resource['icon']) ? 'image' : 'icon';
+      if ($icon_type === 'image') {
+         $html .= '<img src="' . $resource['icon'] . '" title="' . $resource['name'] . '" alt="' . $resource['name'] . '" style="' . ($icon_type === 'image' ? 'display: block' : 'display: none') . '" onerror="onWRImageLoadError(this);" data-fallback="'.$default_icon.'"/>';
+      }
+
+      if ($icon_type === 'image' || ($icon_type === 'icon' && empty($resource['icon']))) {
+         $resource['icon'] = $default_icon;
+      }
+      $html .= '<i style="color: '.$resource['color'].';'.($icon_type === 'icon' ? 'display: block' : 'display: none').'" class="' . $resource['icon'] . '" title="' . $resource['name'] . '" alt="' . $resource['name'] . '"></i>';
+
+      $html .= '</div>';
+      $html .= '<div class="webresources-item-title">'.$resource['name'].'</div>';
+      $html .= '</a>';
+      $html .= '</div>';
+      return $html;
    }
 
    /**
