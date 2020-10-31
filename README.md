@@ -1,4 +1,5 @@
 # Web Resources Plugin for GLPI
+[![CodeFactor](https://www.codefactor.io/repository/github/cconard96/glpi-webresources-plugin/badge)](https://www.codefactor.io/repository/github/cconard96/glpi-webresources-plugin)
 
 Adds a dashboard for web resources.
 Resources can be scoped to specific Entities, Profiles, Groups, or Users (or a mix).
