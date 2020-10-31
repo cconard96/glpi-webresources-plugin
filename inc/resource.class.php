@@ -609,6 +609,17 @@ JS;
       return parent::showMassiveActionsSubForm($ma);
    }
 
+   protected static function getRelationItemtypeForItemtype(string $itemtype): ?string
+   {
+      static $map = [
+         User::class    => PluginWebresourcesResource_User::class,
+         Group::class   => PluginWebresourcesResource_Group::class,
+         Profile::class => PluginWebresourcesResource_Profile::class,
+         Entity::class  => PluginWebresourcesResource_Entity::class
+      ];
+      return $map[$itemtype] ?? null;
+   }
+
    public static function processMassiveActionsForOneItemtype(MassiveAction $ma, CommonDBTM $item, array $ids)
    {
       global $DB;
@@ -621,29 +632,13 @@ JS;
                $input['plugin_webresources_resources_id'] = $id;
                try {
                   $DB->beginTransaction();
-                  switch ($input["_type"]) {
-                     case 'User' :
-                        if (isset($input['users_id']) && $input['users_id']) {
-                           $rel_item = new PluginWebresourcesResource_User();
-                        }
-                        break;
-
-                     case 'Group' :
-                        if (isset($input['groups_id']) && $input['groups_id']) {
-                           $rel_item = new PluginWebresourcesResource_Group();
-                        }
-                        break;
-
-                     case 'Profile' :
-                        if (isset($input['profiles_id']) && $input['profiles_id']) {
-                           $rel_item = new PluginWebresourcesResource_Profile();
-                        }
-                        break;
-
-                     case 'Entity' :
-                        $rel_item = new PluginWebresourcesResource_Entity();
-                        break;
+                  $rel_itemtype = self::getRelationItemtypeForItemtype($input["_type"]);
+                  $rel_item = new $rel_itemtype();
+                  $fk = getForeignKeyFieldForItemType($input["_type"]);
+                  if (!isset($input[$fk])) {
+                     continue;
                   }
+
                   if (!is_null($rel_item)) {
                      $rel_item->add($input);
                      Event::log($input["plugin_webresources_resources_id"], __CLASS__, 4, "plugins",
@@ -651,7 +646,7 @@ JS;
                   }
                   $DB->commit();
                   $ma->itemDone($item->getType(), $id, MassiveAction::ACTION_OK);
-               } catch (\RuntimeException $e) {
+               } catch (RuntimeException $e) {
                   $DB->rollBack();
                   $ma->itemDone($item->getType(), $id, $e->getCode());
                   $ma->addMessage($item->getErrorMessage($e->getMessage()));
@@ -665,29 +660,12 @@ JS;
                $input['plugin_webresources_resources_id'] = $id;
                try {
                   $DB->beginTransaction();
-                  switch ($input["_type"]) {
-                     case 'User' :
-                        if (isset($input['users_id']) && $input['users_id']) {
-                           $rel_itemtype = PluginWebresourcesResource_User::class;
-                        }
-                        break;
-
-                     case 'Group' :
-                        if (isset($input['groups_id']) && $input['groups_id']) {
-                           $rel_itemtype = PluginWebresourcesResource_Group::class;
-                        }
-                        break;
-
-                     case 'Profile' :
-                        if (isset($input['profiles_id']) && $input['profiles_id']) {
-                           $rel_itemtype = PluginWebresourcesResource_Profile::class;
-                        }
-                        break;
-
-                     case 'Entity' :
-                        $rel_itemtype = PluginWebresourcesResource_Entity::class;
-                        break;
+                  $rel_itemtype = self::getRelationItemtypeForItemtype($input["_type"]);
+                  $fk = getForeignKeyFieldForItemType($input["_type"]);
+                  if (!isset($input[$fk])) {
+                     continue;
                   }
+
                   /** @var CommonDBTM $rel_itemtype */
                   if (!is_null($rel_itemtype)) {
                      unset($input['_type'], $input['addvisibility'], $input['_glpi_csrf_token']);
@@ -697,7 +675,7 @@ JS;
                   }
                   $DB->commit();
                   $ma->itemDone($item->getType(), $id, MassiveAction::ACTION_OK);
-               } catch (\RuntimeException $e) {
+               } catch (RuntimeException $e) {
                   $DB->rollBack();
                   $ma->itemDone($item->getType(), $id, $e->getCode());
                   $ma->addMessage($item->getErrorMessage($e->getMessage()));

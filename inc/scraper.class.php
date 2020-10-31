@@ -66,14 +66,15 @@ class PluginWebresourcesScraper
 
    /**
     * @param string $url
-    * @param string $path
+    * @param ?string $path
     * @return bool|string
     */
    private static function baseUrl(string $url, string $path = null)
    {
       $return = '';
 
-      if (!$parsed_url = parse_url($url)) {
+      $parsed_url = parse_url($url);
+      if (!$parsed_url) {
          return false;
       }
 
@@ -191,7 +192,8 @@ class PluginWebresourcesScraper
 
             foreach ($links as $link) {
 
-               if ($link->hasAttribute('rel') && $href = $link->getAttribute('href')) {
+               $href = $link->getAttribute('href');
+               if ($href && $link->hasAttribute('rel')) {
 
                   $attribute = $link->getAttribute('rel');
 

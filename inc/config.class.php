@@ -37,7 +37,7 @@ class PluginWebresourcesConfig extends CommonDBTM
       return '';
    }
 
-   public function showForm()
+   public function showForm(): bool
    {
       if (!Session::haveRight('config', UPDATE)) {
          return false;
@@ -65,6 +65,7 @@ class PluginWebresourcesConfig extends CommonDBTM
       echo '</table>';
       echo '</div>';
       Html::closeForm();
+      return true;
    }
 
    public static function displayTabContentForItem(CommonGLPI $item, $tabnum = 1, $withtemplate = 0)

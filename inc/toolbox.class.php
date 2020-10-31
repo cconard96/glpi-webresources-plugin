@@ -31,11 +31,10 @@ class PluginWebresourcesToolbox {
     *
     * @return boolean
     */
-   public static function isValidWebUrl($url): bool {
-      $valid = preg_match(
+   public static function isValidWebUrl(string $url): bool {
+      return preg_match(
             "/^(?:http[s]?:\/\/(?:[^\s`!()\[\]{};'\",<>«»“”‘’+]+|[^\s`!()\[\]{};:'\".,<>«»“”‘’+]))$/iu",
             $url
          );
-      return $valid;
    }
 }

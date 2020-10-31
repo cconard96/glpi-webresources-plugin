@@ -252,7 +252,12 @@ class PluginWebresourcesDashboard extends CommonGLPI {
       global $GLPI_CACHE;
 
       // Fetch and Cache auto-generated icons
-      $cache = $regen_icons ? null : $GLPI_CACHE->get('webresources.autoico');
+      $cache = null;
+      try {
+         $cache = $regen_icons ? null : $GLPI_CACHE->get('webresources.autoico');
+      } catch (\Psr\SimpleCache\InvalidArgumentException $e) {
+         // Cache load failed or was empty. Expect lowered performance but it should still function.
+      }
       $cache = $cache === null ? [] : json_decode($cache, true);
 
       $to_fetch = [];
@@ -305,7 +310,11 @@ class PluginWebresourcesDashboard extends CommonGLPI {
       }
 
       // Save Cache
-      $GLPI_CACHE->set('webresources.autoico', json_encode($cache));
+      try {
+         $GLPI_CACHE->set('webresources.autoico', json_encode($cache));
+      } catch (\Psr\SimpleCache\InvalidArgumentException $e) {
+         // Cache save failed. Expect lowered performance but it should still function.
+      }
    }
 
    /**
