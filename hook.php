@@ -195,7 +195,7 @@ function plugin_webresources_preupdateitem(CommonDBTM $item)
    global $DB;
 
    static $supported_types = [Entity::class, Supplier::class, Appliance::class];
-   if (in_array($item::getType(), $supported_types, true)) {
+   if (isset($item->input['webresources_icon']) && in_array($item::getType(), $supported_types, true)) {
       $DB->updateOrInsert('glpi_plugin_webresources_autoicons', [
          'itemtype'  => $item::getType(),
          'items_id'  => $item->getID(),
