@@ -40,7 +40,11 @@ function plugin_init_webresources()
       'Entity'    => 'plugin_webresources_preupdateitem',
    ];
    $PLUGIN_HOOKS['pre_item_purge']['webresources'] = 'plugin_webresources_preItemPurge';
-   $PLUGIN_HOOKS['add_css']['webresources'][] = 'css/webresources.css';
+   if ($_SESSION['glpipalette'] === 'darker') {
+      $PLUGIN_HOOKS['add_css']['webresources'][] = 'css/webresources-dark.css';
+   } else {
+      $PLUGIN_HOOKS['add_css']['webresources'][] = 'css/webresources.css';
+   }
 }
 
 function plugin_version_webresources()
