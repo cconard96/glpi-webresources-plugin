@@ -413,7 +413,10 @@ class PluginWebresourcesResource extends CommonDBVisible implements ExtraVisibil
       $canedit = $this->can($ID, UPDATE);
 
       echo "<tr class='tab_bg_1'>";
-      echo "<td>".__('Name')."</td><td>";
+      echo "<td>".__('Name')."</td>";
+      echo "<td>";
+      $users_id = (isset($this->fields['users_id']) && !empty($this->fields['users_id'])) ? $this->fields['users_id'] : $_SESSION['glpiID'];
+      echo Html::hidden('users_id', ['value' => $users_id]);
       Html::autocompletionTextField($this, "name", ['size' => 34]);
       echo "</td><td>".__('Link', 'webresources')."</td><td>";
       echo Html::input('link', [
