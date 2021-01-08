@@ -81,8 +81,8 @@
 
       .webresources-item {
          display: inline-block;
-         margin-left: 10px;
-         margin-right: 5px;
+         margin-left: 15px;
+         margin-right: 10px;
          width: 5em;
          vertical-align: top;
 
@@ -98,6 +98,11 @@
          .webresources-item-icon {
             text-align: center;
             font-size: 1.2em;
+            width: 74px;
+            height: 74px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
 
             img, i.fas, i.far, i.fab {
                font-size: 64px;
@@ -106,6 +111,10 @@
                margin-top: 5px;
                margin-bottom: 5px;
                padding-bottom: 3px;
+            }
+
+            img {
+               height: auto !important;
             }
          }
 
