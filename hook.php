@@ -113,6 +113,7 @@ function plugin_webresources_install()
    if (!count(Config::getConfigurationValues('plugin:Webresources'))) {
       Config::setConfigurationValues('plugin:Webresources', [
          'config_class'    => PluginWebresourcesConfig::class,
+         'menu'            => 'plugins',
          'use_duckduckgo'  => 0,
          'use_google'      => 0,
       ]);
