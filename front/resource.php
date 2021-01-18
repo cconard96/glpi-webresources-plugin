@@ -30,7 +30,8 @@ if (!$plugin->isActivated('webresources')) {
 
 Session::checkLoginUser();
 
-Html::header(PluginWebresourcesResource::getTypeName(Session::getPluralNumber()), '', 'plugins', 'PluginWebresourcesDashboard');
+$config = Config::getConfigurationValues('plugin:Webresources', ['menu']);
+Html::header(PluginWebresourcesResource::getTypeName(Session::getPluralNumber()), '', $config['menu'] ?? 'plugins', 'PluginWebresourcesDashboard');
 
 Search::show(PluginWebresourcesResource::class);
 

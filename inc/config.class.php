@@ -46,16 +46,29 @@ class PluginWebresourcesConfig extends CommonDBTM
 
       echo "<form name='form' action=\"".Toolbox::getItemTypeFormURL('Config')."\" method='post'>";
       echo "<div class='center' id='tabsbody'>";
+
+      echo "<table class='tab_cadre_fixe'><thead>";
+      echo "<th colspan='4'>" . __('General Settings', 'webresources') . '</th></thead>';
+      echo '<td>' . __('Plugin Menu', 'webresources') . '</td>';
+      echo '<td>';
+      Dropdown::showFromArray('menu', [
+         'management'   => __('Management'),
+         'plugins'      => _n('Plugin', 'Plugins', Session::getPluralNumber()),
+         'tools'        => __('Tools'),
+      ], ['value' => $config['menu'] ?? 'plugins']);
+      echo '</td><td></td><td>';
+      echo '</td></tr></table>';
+
       echo "<table class='tab_cadre_fixe'><thead>";
       echo "<th colspan='4'>" . __('Favicon Settings', 'webresources') . '</th></thead>';
       echo '<td>' . __('Use DuckDuckGo Favicon Service', 'webresources') . '</td>';
       echo '<td>';
       echo "<input type='hidden' name='config_class' value='".__CLASS__."'>";
       echo "<input type='hidden' name='config_context' value='plugin:Webresources'>";
-      Dropdown::showYesNo('use_duckduckgo', $config['use_duckduckgo']);
+      Dropdown::showYesNo('use_duckduckgo', $config['use_duckduckgo'] ?? 0);
       echo '</td><td>' .__('Use Google Favicon Service', 'webresources'). '</td><td>';
-      Dropdown::showYesNo('use_google', $config['use_google']);
-      echo '</td></tr>';
+      Dropdown::showYesNo('use_google', $config['use_google'] ?? 0);
+      echo '</td></tr></table>';
 
       echo "<table class='tab_cadre_fixe'>";
       echo "<tr class='tab_bg_2'>";

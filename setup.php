@@ -29,8 +29,9 @@ function plugin_init_webresources()
 {
 	global $PLUGIN_HOOKS;
 	$PLUGIN_HOOKS['csrf_compliant']['webresources'] = true;
+	$config = Config::getConfigurationValues('plugin:Webresources', ['menu']);
    if (Session::haveRight(PluginWebresourcesResource::$rightname, READ)) {
-      $PLUGIN_HOOKS['menu_toadd']['webresources'] = ['plugins' => 'PluginWebresourcesDashboard'];
+      $PLUGIN_HOOKS['menu_toadd']['webresources'] = [$config['menu'] ?? 'plugins' => 'PluginWebresourcesDashboard'];
    }
    Plugin::registerClass('PluginWebresourcesProfile', ['addtabon' => ['Profile']]);
    Plugin::registerClass('PluginWebresourcesConfig', ['addtabon' => 'Config']);

@@ -106,7 +106,8 @@ if (isset($_POST["add"])) {
    Html::back();
 
 } else {
-   Html::header(PluginWebresourcesResource::getTypeName(Session::getPluralNumber()), '', 'plugins', 'PluginWebresourcesDashboard');
+   $config = Config::getConfigurationValues('plugin:Webresources', ['menu']);
+   Html::header(PluginWebresourcesResource::getTypeName(Session::getPluralNumber()), '', $config['menu'] ?? 'plugins', 'PluginWebresourcesDashboard');
    $resource->display($_REQUEST);
    Html::footer();
 }
