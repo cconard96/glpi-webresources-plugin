@@ -21,7 +21,7 @@
  --------------------------------------------------------------------------
  */
 
-define('PLUGIN_WEBRESOURCES_VERSION', '1.3.0');
+define('PLUGIN_WEBRESOURCES_VERSION', '1.3.2');
 define('PLUGIN_WEBRESOURCES_MIN_GLPI', '9.5.0');
 define('PLUGIN_WEBRESOURCES_MAX_GLPI', '9.6.0');
 
@@ -29,21 +29,25 @@ function plugin_init_webresources()
 {
 	global $PLUGIN_HOOKS;
 	$PLUGIN_HOOKS['csrf_compliant']['webresources'] = true;
-   if (Session::haveRight(PluginWebresourcesResource::$rightname, READ)) {
-      $PLUGIN_HOOKS['menu_toadd']['webresources'] = ['plugins' => 'PluginWebresourcesDashboard'];
-   }
-   Plugin::registerClass('PluginWebresourcesProfile', ['addtabon' => ['Profile']]);
-   Plugin::registerClass('PluginWebresourcesConfig', ['addtabon' => 'Config']);
-   $PLUGIN_HOOKS['post_item_form']['webresources'] = 'plugin_webresources_showPostItemForm';
-   $PLUGIN_HOOKS['pre_item_update']['webresources'] = [
-      'Supplier'  => 'plugin_webresources_preupdateitem',
-      'Entity'    => 'plugin_webresources_preupdateitem',
-   ];
-   $PLUGIN_HOOKS['pre_item_purge']['webresources'] = 'plugin_webresources_preItemPurge';
-   if ($_SESSION['glpipalette'] === 'darker') {
-      $PLUGIN_HOOKS['add_css']['webresources'][] = 'css/webresources-dark.scss';
-   } else {
-      $PLUGIN_HOOKS['add_css']['webresources'][] = 'css/webresources.scss';
+   $plugin = new Plugin();
+   if ($plugin->isInstalled('webresources') && $plugin->isActivated('webresources')) {
+      $config = Config::getConfigurationValues('plugin:Webresources', ['menu']);
+      if (Session::haveRight(PluginWebresourcesResource::$rightname, READ)) {
+         $PLUGIN_HOOKS['menu_toadd']['webresources'] = [$config['menu'] ?? 'plugins' => 'PluginWebresourcesDashboard'];
+      }
+      Plugin::registerClass('PluginWebresourcesProfile', ['addtabon' => ['Profile']]);
+      Plugin::registerClass('PluginWebresourcesConfig', ['addtabon' => 'Config']);
+      $PLUGIN_HOOKS['post_item_form']['webresources'] = 'plugin_webresources_showPostItemForm';
+      $PLUGIN_HOOKS['pre_item_update']['webresources'] = [
+         'Supplier' => 'plugin_webresources_preupdateitem',
+         'Entity' => 'plugin_webresources_preupdateitem',
+      ];
+      $PLUGIN_HOOKS['pre_item_purge']['webresources'] = 'plugin_webresources_preItemPurge';
+      if ($_SESSION['glpipalette'] === 'darker') {
+         $PLUGIN_HOOKS['add_css']['webresources'][] = 'css/webresources-dark.scss';
+      } else {
+         $PLUGIN_HOOKS['add_css']['webresources'][] = 'css/webresources.scss';
+      }
    }
 }
 
@@ -63,29 +67,3 @@ function plugin_version_webresources()
 	      ]
 	   ];
 }
-
-function plugin_webresources_check_prerequisites()
-{
-	if (!method_exists('Plugin', 'checkGlpiVersion')) {
-	      $version = preg_replace('/^((\d+\.?)+).*$/', '$1', GLPI_VERSION);
-	      $matchMinGlpiReq = version_compare($version, PLUGIN_WEBRESOURCES_MIN_GLPI, '>=');
-	      $matchMaxGlpiReq = version_compare($version, PLUGIN_WEBRESOURCES_MAX_GLPI, '<');
-	      if (!$matchMinGlpiReq || !$matchMaxGlpiReq) {
-	         echo vsprintf(
-	            'This plugin requires GLPI >= %1$s and < %2$s.',
-	            [
-	               PLUGIN_WEBRESOURCES_MIN_GLPI,
-	               PLUGIN_WEBRESOURCES_MAX_GLPI,
-	            ]
-	         );
-	         return false;
-	      }
-	   }
-	   return true;
-}
-
-function plugin_webresources_check_config()
-{
-	return true;
-}
-
