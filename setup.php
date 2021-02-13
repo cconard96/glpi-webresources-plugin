@@ -54,7 +54,7 @@ function plugin_version_webresources()
 	      'name'         => __('Web Resources', 'webresources'),
 	      'version'      => PLUGIN_WEBRESOURCES_VERSION,
 	      'author'       => 'Curtis Conard',
-	      'license'      => 'GPLv2',
+	      'license'      => 'GPLv2+',
 	      'homepage'     =>'https://github.com/cconard96/glpi-webresources-plugin',
 	      'requirements' => [
 	         'glpi'   => [
