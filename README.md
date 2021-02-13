@@ -16,3 +16,7 @@ For more information about URI schemes please refer to https://en.wikipedia.org/
 If you want to try automatically getting an icon for a URL, you should make sure the `ext-dom` extension for PHP is installed and loaded. Otherwise, the plugin will try to fallback to 'DOMAIN/favicon.ico'.
 ## How to use
 Please refer to the [Wiki](https://github.com/cconard96/glpi-webresources-plugin/wiki/Quick-Start) for a Quick Start guide.
+
+## Locale Support
+- Contribute to existing localizations on [POEditor](https://poeditor.com/join/project?hash=H4Yugw8tw6).
+- To request new languages, please open a GitHub issue.
