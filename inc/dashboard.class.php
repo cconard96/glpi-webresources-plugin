@@ -38,6 +38,14 @@ class PluginWebresourcesDashboard extends CommonGLPI {
       return 'fab fa-chrome';
    }
 
+   public function getTabNameForItem(CommonGLPI $item, $withtemplate = 0) {
+      return self::getTypeName();
+   }
+
+   public static function displayTabContentForItem(CommonGLPI $item, $tabnum = 1, $withtemplate = 0) {
+      self::showDashboard();
+   }
+
    public static function getMenuContent()
    {
       $menu = parent::getMenuContent();
