@@ -52,7 +52,7 @@ class PluginWebresourcesResource_Entity extends CommonDBRelation {
          ]
       ]);
 
-      while ($data = $iterator->next()) {
+      foreach ($iterator as $data) {
          $entities[$data['entities_id']][] = $data;
       }
       return $entities;

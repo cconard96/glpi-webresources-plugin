@@ -52,7 +52,7 @@ class PluginWebresourcesResource_Profile extends CommonDBRelation {
          ]
       ]);
 
-      while ($data = $iterator->next()) {
+      foreach ($iterator as $data) {
          $profiles[$data['profiles_id']][] = $data;
       }
       return $profiles;

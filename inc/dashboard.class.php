@@ -82,7 +82,7 @@ class PluginWebresourcesDashboard extends CommonGLPI {
             'FROM'   => PluginWebresourcesResource::getTable()
          ] + PluginWebresourcesResource::getVisibilityCriteria(true));
       $resources = [];
-      while($data = $iterator->next()) {
+      foreach ($iterator as $data) {
          $resources[$data['plugin_webresources_categories_id']][] = $data;
       }
 
@@ -100,7 +100,7 @@ class PluginWebresourcesDashboard extends CommonGLPI {
       $types = [
          0  => __('Uncategorized', 'webresources')
       ];
-      while ($data = $types_iterator->next()) {
+      foreach ($types_iterator as $data) {
          $types[$data['id']] = $data['name'];
       }
       $iterator = $DB->request([
@@ -112,7 +112,7 @@ class PluginWebresourcesDashboard extends CommonGLPI {
          return $resources;
       }
 
-      while($data = $iterator->next()) {
+      foreach ($iterator as $data) {
          if (!empty($data['website'])) {
             $ico_iterator = $DB->request([
                'SELECT' => ['icon', 'color'],
@@ -123,7 +123,7 @@ class PluginWebresourcesDashboard extends CommonGLPI {
                ]
             ]);
             if (count($ico_iterator)) {
-               $icodata = $ico_iterator->next();
+               $icodata = $ico_iterator->current();
                $ico = empty($icodata['icon']) ? Supplier::getIcon() : $icodata['icon']; // '@auto'
                $color = $icodata['color'];
             } else {
@@ -154,7 +154,7 @@ class PluginWebresourcesDashboard extends CommonGLPI {
       $types = [
          0  => __('Uncategorized', 'webresources')
       ];
-      while ($data = $types_iterator->next()) {
+      foreach ($types_iterator as $data) {
          $types[$data['id']] = $data['name'];
       }
       $resources = [];
@@ -178,7 +178,7 @@ class PluginWebresourcesDashboard extends CommonGLPI {
          ]
       ] + getEntitiesRestrictCriteria());
       $resources = [];
-      while($data = $iterator->next()) {
+      foreach ($iterator as $data) {
          $appliancetype_name = $types[$data['appliancetypes_id']];
          if (!empty($data['address'])) {
             $resources[$appliancetype_name][] = [
@@ -217,7 +217,7 @@ class PluginWebresourcesDashboard extends CommonGLPI {
          return $resources;
       }
 
-      while($data = $iterator->next()) {
+      foreach ($iterator as $data) {
          if (!empty($data['website'])) {
             $ico_iterator = $DB->request([
                'SELECT' => ['icon', 'color'],
@@ -228,7 +228,7 @@ class PluginWebresourcesDashboard extends CommonGLPI {
                ]
             ]);
             if (count($ico_iterator)) {
-               $icodata = $ico_iterator->next();
+               $icodata = $ico_iterator->current();
                $ico = empty($icodata['icon']) ? Entity::getIcon() : $icodata['icon'];
                $color = $icodata['color'];
             } else {
@@ -358,7 +358,7 @@ class PluginWebresourcesDashboard extends CommonGLPI {
             'SELECT' => ['id', 'name'],
             'FROM' => PluginWebresourcesCategory::getTable(),
          ]);
-         while ($cat = $cat_iterator->next()) {
+         foreach ($cat_iterator as $cat) {
             $categories[$cat['id']] = $cat['name'];
          }
       }

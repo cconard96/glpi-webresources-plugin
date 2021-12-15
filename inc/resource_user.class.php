@@ -52,7 +52,7 @@ class PluginWebresourcesResource_User extends CommonDBRelation {
          ]
       ]);
 
-      while ($data = $iterator->next()) {
+      foreach ($iterator as $data) {
          $users[$data['users_id']][] = $data;
       }
       return $users;
