@@ -173,7 +173,7 @@ function plugin_webresources_showPostItemForm(array $params)
       $ico = '';
       $color = '#000000';
       if (count($iterator)) {
-         $data = $iterator->next();
+         $data = $iterator->current();
          $ico = $data['icon'];
          $color = $data['color'];
       }

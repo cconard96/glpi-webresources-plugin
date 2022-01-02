@@ -35,5 +35,21 @@ if (!isset($_REQUEST['context'])) {
    throw new RuntimeException('Required argument missing!');
 }
 
+if (empty($_REQUEST['context'])) {
+    $_REQUEST['context'] = 'personal';
+}
+if (!isset($_REQUEST['view_mode'])) {
+    $_REQUEST['view_mode'] = 'grid';
+}
+
 header('Content-Type', 'text/html');
-echo PluginWebresourcesDashboard::getDashboardContent($_REQUEST['context']);
+switch ($_REQUEST['view_mode']) {
+   case 'grid':
+      echo PluginWebresourcesDashboard::getDashboardContentGrid($_REQUEST['context']);
+      break;
+   case 'list':
+      echo PluginWebresourcesDashboard::getDashboardContentList($_REQUEST['context']);
+      break;
+   default:
+      throw new RuntimeException('Invalid view mode!');
+}

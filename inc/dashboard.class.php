@@ -21,6 +21,8 @@
  --------------------------------------------------------------------------
  */
 
+use Glpi\Toolbox\Sanitizer;
+
 /**
  * Web Resources Dashboard
  */
@@ -112,7 +114,7 @@ class PluginWebresourcesDashboard extends CommonGLPI {
          $types[$data['id']] = $data['name'];
       }
       $iterator = $DB->request([
-         'SELECT' => [Supplier::getTable().'.id AS id', 'name', 'website', 'suppliertypes_id'],
+         'SELECT' => [Supplier::getTable().'.id AS id', 'name', 'website', 'suppliertypes_id', Supplier::getTable().'.comment AS comment'],
          'FROM'   => Supplier::getTable()
       ] + getEntitiesRestrictCriteria());
       $resources = [];
@@ -143,7 +145,8 @@ class PluginWebresourcesDashboard extends CommonGLPI {
                'name' => $data['name'],
                'link' => $data['website'],
                'color' => $color,
-               'icon' => $ico
+               'icon' => $ico,
+               'comment' => $data['comment'] ?? ''
             ];
          }
       }
@@ -156,7 +159,7 @@ class PluginWebresourcesDashboard extends CommonGLPI {
       global $DB;
 
       $types_iterator = $DB->request([
-         'SELECT' => ['id', 'name'],
+         'SELECT' => ['id', 'name', 'comment'],
          'FROM'   => ApplianceType::getTable()
       ]);
       $types = [
@@ -193,7 +196,8 @@ class PluginWebresourcesDashboard extends CommonGLPI {
                'name' => $data['name'],
                'link' => $data['address'],
                'color' => '#000000',
-               'icon' => Appliance::getIcon()
+               'icon' => Appliance::getIcon(),
+               'comment' => $data['comment'] ?? ''
             ];
          }
          if (!empty($data['backoffice'])) {
@@ -201,7 +205,8 @@ class PluginWebresourcesDashboard extends CommonGLPI {
                'name' => $data['name'] . ' (Management)',
                'link' => $data['backoffice'],
                'color' => '#000000',
-               'icon' => Appliance::getIcon()
+               'icon' => Appliance::getIcon(),
+               'comment' => $data['comment'] ?? ''
             ];
          }
       }
@@ -215,7 +220,7 @@ class PluginWebresourcesDashboard extends CommonGLPI {
 
       $category = Entity::getTypeName(Session::getPluralNumber());
       $iterator = $DB->request([
-            'SELECT' => [Entity::getTable().'.id AS id', 'completename', 'website'],
+            'SELECT' => [Entity::getTable().'.id AS id', 'completename', 'website', 'comment'],
             'FROM'   => Entity::getTable()
          ] + getEntitiesRestrictCriteria());
       $resources = [
@@ -247,7 +252,8 @@ class PluginWebresourcesDashboard extends CommonGLPI {
                'name'   => $data['completename'],
                'link'   => $data['website'],
                'color'  => $color,
-               'icon'   => $ico
+               'icon'   => $ico,
+               'comment' => $data['comment'] ?? ''
             ];
          }
       }
@@ -325,73 +331,139 @@ class PluginWebresourcesDashboard extends CommonGLPI {
       }
    }
 
+    /**
+     * Get the resources for a specific dashboard context
+     * @param string $context
+     * @param bool $skip_rights
+     * @return array
+     */
+   private static function getDashboardResources(string $context, bool $skip_rights = false): array
+   {
+       switch ($context)
+       {
+           case 'suppliers':
+               $default_icon = Supplier::getIcon();
+               $resources = self::getSupplierResources($skip_rights);
+               $dashboard_header = Supplier::getTypeName(Session::getPluralNumber());
+               break;
+           case 'appliances':
+               $default_icon = Appliance::getIcon();
+               $resources = self::getApplianceResources($skip_rights);
+               $dashboard_header = Appliance::getTypeName(Session::getPluralNumber());
+               break;
+           case 'entities':
+               $default_icon = Entity::getIcon();
+               $resources = self::getEntityResources($skip_rights);
+               $dashboard_header = Entity::getTypeName(Session::getPluralNumber());
+               break;
+           case 'personal':
+           default:
+               $default_icon = 'fab fa-chrome';
+               $resources = self::getPersonalResources();
+               $dashboard_header = PluginWebresourcesResource::getTypeName(Session::getPluralNumber());
+       }
+
+       return [
+           'default_icon'   => $default_icon,
+           'resources'      => $resources,
+           'dashboard_header' => $dashboard_header,
+       ];
+   }
+
+   private static function getCategories(): array
+   {
+       global $DB;
+       $categories = [];
+       $cat_iterator = $DB->request([
+           'SELECT' => ['id', 'name'],
+           'FROM' => PluginWebresourcesCategory::getTable(),
+       ]);
+       foreach ($cat_iterator as $cat) {
+           $categories[$cat['id']] = $cat['name'];
+       }
+       return $categories;
+   }
+
+   public static function getDashboardContentGrid(string $context = 'personal', bool $regen_icons = false, bool $skip_rights = false): string
+   {
+       [
+           'default_icon'   => $default_icon,
+           'resources'      => $resources,
+           'dashboard_header' => $dashboard_header,
+       ] = self::getDashboardResources($context, $skip_rights);
+       $categories = [];
+       if ($context === 'personal') {
+           $categories = self::getCategories();
+       }
+       self::populateAutoIcons($resources, $regen_icons);
+
+       ob_start();
+       echo '<div class="webresources-dashboard" data-view-mode="grid" data-context="'.$context.'"><div class="webresources-header">'.$dashboard_header.'</div>';
+       echo '<div class="webresources-categories">';
+       foreach ($resources as $cat_id => $cat_resources) {
+           echo '<div id="webresources-category-'.$cat_id.'" class="webresources-category">';
+           if (is_numeric($cat_id)) {
+               $cat_name = $cat_id === 0 ? __('Uncategorized', 'webresources') : $categories[$cat_id];
+           } else {
+               $cat_name = $cat_id;
+           }
+           echo '<div class="webresources-category-header">'.$cat_name.'</div>';
+           echo '<div class="webresources-items">';
+           foreach ($cat_resources as $resource) {
+               echo self::getResourceAsIcon($resource, $default_icon);
+           }
+           echo '</div></div>';
+       }
+       echo '</div></div>';
+       return ob_get_clean();
+   }
+
+    public static function getDashboardContentList(string $context = 'personal', bool $regen_icons = false, bool $skip_rights = false): string
+    {
+        [
+            'default_icon'   => $default_icon,
+            'resources'      => $resources,
+            'dashboard_header' => $dashboard_header,
+        ] = self::getDashboardResources($context, $skip_rights);
+        $categories = [];
+        if ($context === 'personal') {
+            $categories = self::getCategories();
+        }
+        self::populateAutoIcons($resources, $regen_icons);
+
+        ob_start();
+        echo '<div class="webresources-dashboard" data-view-mode="list" data-context="'.$context.'"><div class="webresources-header">'.$dashboard_header.'</div>';
+        echo '<div class="webresources-categories">';
+        foreach ($resources as $cat_id => $cat_resources) {
+            echo '<div id="webresources-category-'.$cat_id.'" class="webresources-category">';
+            if (is_numeric($cat_id)) {
+                $cat_name = $cat_id === 0 ? __('Uncategorized', 'webresources') : $categories[$cat_id];
+            } else {
+                $cat_name = $cat_id;
+            }
+            echo '<div class="webresources-category-header">'.$cat_name.'</div>';
+            echo '<table class="table table-sm webresources-items">';
+            foreach ($cat_resources as $resource) {
+                echo self::getResourceAsTableRow($resource, $default_icon);
+            }
+            echo '</table></div>';
+        }
+        echo '</div></div>';
+        return ob_get_clean();
+    }
+
    /**
     * @param string $context
     * @param bool $regen_icons If true, automatic icons (Dynamic resources based on other items like Suppliers) are regenerated
     * @param bool $skip_rights
     * @return string
     * @since 1.3.0
+    * @deprecated 2.0.0 Use getDashboardContentGrid() or getDashboardContentList() instead.
+    *   This method wraps getDashboardContentGrid() and will be removed in 2.1.0.
     */
    public static function getDashboardContent(string $context = 'personal', bool $regen_icons = false, bool $skip_rights = false): string
    {
-      global $DB;
-
-      switch ($context)
-      {
-         case 'suppliers':
-            $default_icon = Supplier::getIcon();
-            $resources = self::getSupplierResources($skip_rights);
-            $dashboard_header = Supplier::getTypeName(Session::getPluralNumber());
-            break;
-         case 'appliances':
-            $default_icon = Appliance::getIcon();
-            $resources = self::getApplianceResources($skip_rights);
-            $dashboard_header = Appliance::getTypeName(Session::getPluralNumber());
-            break;
-         case 'entities':
-            $default_icon = Entity::getIcon();
-            $resources = self::getEntityResources($skip_rights);
-            $dashboard_header = Entity::getTypeName(Session::getPluralNumber());
-            break;
-         case 'personal':
-         default:
-            $default_icon = 'fab fa-chrome';
-            $resources = self::getPersonalResources();
-            $dashboard_header = PluginWebresourcesResource::getTypeName(Session::getPluralNumber());
-      }
-
-      $categories = [];
-      if ($context === 'personal') {
-         $cat_iterator = $DB->request([
-            'SELECT' => ['id', 'name'],
-            'FROM' => PluginWebresourcesCategory::getTable(),
-         ]);
-         foreach ($cat_iterator as $cat) {
-            $categories[$cat['id']] = $cat['name'];
-         }
-      }
-
-      self::populateAutoIcons($resources, $regen_icons);
-
-      ob_start();
-      echo '<div><div class="webresources-header">'.$dashboard_header.'</div>';
-      echo '<div class="webresources-categories">';
-      foreach ($resources as $cat_id => $cat_resources) {
-         echo '<div id="webresources-category-'.$cat_id.'" class="webresources-category">';
-         if (is_numeric($cat_id)) {
-            $cat_name = $cat_id === 0 ? __('Uncategorized', 'webresources') : $categories[$cat_id];
-         } else {
-            $cat_name = $cat_id;
-         }
-         echo '<div class="webresources-category-header">'.$cat_name.'</div>';
-         echo '<div class="webresources-items">';
-         foreach ($cat_resources as $resource) {
-            echo self::getResourceAsIcon($resource, $default_icon);
-         }
-         echo '</div></div>';
-      }
-      echo '</div></div>';
-      return ob_get_clean();
+      return self::getDashboardContentList($context, $regen_icons, $skip_rights);
    }
 
    private static function getResourceAsIcon(array $resource, string $default_icon = 'fab fa-chrome')
@@ -417,12 +489,53 @@ class PluginWebresourcesDashboard extends CommonGLPI {
       return $html;
    }
 
+   private static function getResourceAsTableRow(array $resource, string $default_icon = 'fab-fa-chrome')
+   {
+       // Get sanitized comments and truncate to 100 chars
+       $comments_full = Sanitizer::sanitize($resource['comment'] ?? '');
+       $comments_length = strlen($comments_full);
+       $comments = Toolbox::substr($comments_full, 0, 100);
+       if ($comments_length > 100) {
+           $comments .= '...';
+       }
+
+       $html = '<tr style="vertical-align: middle" class="webresources-item">';
+       // Show resource icon, link and name, and truncated comments as cells
+       $html .= '<td>';
+       $html .= '<a href="'.$resource['link'].'" target="_blank">';
+       $html .= '<div class="webresources-item-icon d-table-cell">';
+       $icon_type = PluginWebresourcesToolbox::isValidWebUrl($resource['icon']) ? 'image' : 'icon';
+       if ($icon_type === 'image') {
+           $html .= '<img src="' . $resource['icon'] . '" title="' . $resource['name'] . '" alt="' . $resource['name'] . '" style="' . ($icon_type === 'image' ? 'display: block' : 'display: none') . '" onerror="onWRImageLoadError(this);" data-fallback="'.$default_icon.'"/>';
+       }
+
+       if ($icon_type === 'image' || ($icon_type === 'icon' && empty($resource['icon']))) {
+           $resource['icon'] = $default_icon;
+       }
+       $html .= '<i style="color: '.$resource['color'].';'.($icon_type === 'icon' ? 'display: block' : 'display: none').'" class="' . $resource['icon'] . '" title="' . $resource['name'] . '" alt="' . $resource['name'] . '"></i>';
+
+       $html .= '</div>';
+       $html .= '</td>';
+
+       $html .= '<td>';
+       $html .= '<a href="'.$resource['link'].'" target="_blank">'.$resource['name'].'</a>';
+       $html .= '</td>';
+
+       $html .= '<td title="'.$comments_full.'">';
+       $html .= Toolbox::substr($comments, 0, 100) ?? '';
+       $html .= '</td>';
+
+       $html .= '<tr>';
+       return $html;
+   }
+
    /**
     * @param string $context
     * @since 1.0.0
     * @since 1.3.0 Accept context param. Moved content to getDashboardContent to allow easy loading over AJAX calls
+    * @since 2.0.0 Added $view_mode param to change the view mode of the dashboard
     */
-   public static function showDashboard(string $context = 'personal')
+   public static function showDashboard(string $context = 'personal', string $view_mode = 'grid')
    {
       $available_contexts = self::getDashboardContexts();
       if (!array_key_exists($context, $available_contexts)) {
@@ -432,15 +545,32 @@ class PluginWebresourcesDashboard extends CommonGLPI {
       Dropdown::showFromArray('context', $available_contexts, [
          'value'  => $context
       ]);
+      echo "<div class='input-group'>";
       echo Html::input('search', [
          'placeholder'  => __('Search')
       ]);
+      // Show mode changer icon toggle button (grid and list views)
+      if ($view_mode === 'grid') {
+          echo "<button class='webresources-view-mode btn btn-outline-secondary'><i class='fas fa-list view-switcher' title='".__('List view', 'webresources')."'></i></button>";
+      } else {
+          echo "<button class='webresources-view-mode btn btn-outline-secondary'><i class='fas fa-th view-switcher' title='".__('Grid view', 'webresources')."'></i></button>";
+      }
+      echo '</div>';
       echo '</div>';
       echo '<div id="webresources-content">';
-      echo self::getDashboardContent($context);
+      // Show loading indicator
+       echo '<div class="spinner-border" role="status"></div>';
+//      switch ($view_mode) {
+//          case 'list':
+//              echo self::getDashboardContentList($context);
+//              break;
+//          case 'grid':
+//          default:
+//              echo self::getDashboardContentGrid($context);
+//              break;
+//      }
       echo '</div>';
 
-      $plugin_root = Plugin::getWebDir('webresources');
       $js = <<<JS
 function onWRImageLoadError(img) {
    const img_obj = $(img);
@@ -452,64 +582,6 @@ function onWRImageLoadError(img) {
       i.attr('class', fallback);
    }
 }
-$(document).ready(function() {
-   $('.webresources-toolbar select[name="context"]').on('change', function(v) {
-      const new_context = v.target.value;
-      $.ajax({
-         url: ("{$plugin_root}/ajax/refreshDashboard.php"),
-         data: {context: new_context}
-      }).success(function(data) {
-         $("#webresources-content").empty();
-         $("#webresources-content").append(data);
-         
-         const updateURLParameter = function(url, param, paramVal){
-            let newAdditionalURL = "";
-            let tempArray = url.split("?");
-            let baseURL = tempArray[0];
-            let additionalURL = tempArray[1];
-            let temp = "";
-            if (additionalURL) {
-               tempArray = additionalURL.split("&");
-               for (let i=0; i<tempArray.length; i++){
-                  if(tempArray[i].split('=')[0] != param){
-                     newAdditionalURL += temp + tempArray[i];
-                     temp = "&";
-                  }
-               }
-            }
-            const rows_txt = temp + "" + param + "=" + paramVal;
-            return baseURL + "?" + newAdditionalURL + rows_txt;
-         }
-         window.history.replaceState('', '', updateURLParameter(window.location.href, "context", new_context));
-         applySearchFilters($('.webresources-toolbar input[name="search"]').get(0));
-      });
-   });
-   const applySearchFilters = function(search_el) {
-      const items = $('.webresources-item');
-      const search_filter = search_el.value.toLowerCase();
-      items.each(function(i, v) {
-         if (v.textContent.toLowerCase().includes(search_filter)) {
-            $(v).show();
-         } else {
-            $(v).hide();
-         }
-      });
-      const categories = $('.webresources-category');
-      categories.each(function(i, v) {
-         const cat = $(v);
-         if (cat.find('.webresources-item').filter(function(i2, f) {
-            return $(f).css('display') !== 'none';
-         }).length === 0) {
-            cat.hide();
-         } else {
-            cat.show();
-         }
-      });
-   }
-   $('.webresources-toolbar input[name="search"]').on('keyup', function() {
-      applySearchFilters(this);
-   });
-});
 JS;
       echo Html::scriptBlock($js);
 
