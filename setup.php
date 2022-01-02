@@ -21,9 +21,9 @@
  --------------------------------------------------------------------------
  */
 
-define('PLUGIN_WEBRESOURCES_VERSION', '1.3.2');
-define('PLUGIN_WEBRESOURCES_MIN_GLPI', '9.5.0');
-define('PLUGIN_WEBRESOURCES_MAX_GLPI', '9.6.0');
+define('PLUGIN_WEBRESOURCES_VERSION', '2.0.0-alpha1');
+define('PLUGIN_WEBRESOURCES_MIN_GLPI', '10.0.0');
+define('PLUGIN_WEBRESOURCES_MAX_GLPI', '10.1.0');
 
 function plugin_init_webresources()
 {
@@ -44,11 +44,7 @@ function plugin_init_webresources()
          'Entity' => 'plugin_webresources_preupdateitem',
       ];
       $PLUGIN_HOOKS['pre_item_purge']['webresources'] = 'plugin_webresources_preItemPurge';
-      if (!isCommandLine() && $_SESSION['glpipalette'] === 'darker') {
-         $PLUGIN_HOOKS['add_css']['webresources'][] = 'css/webresources-dark.scss';
-      } else {
-         $PLUGIN_HOOKS['add_css']['webresources'][] = 'css/webresources.scss';
-      }
+      $PLUGIN_HOOKS['add_css']['webresources'][] = 'css/webresources.scss';
    }
 }
 

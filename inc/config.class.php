@@ -37,7 +37,7 @@ class PluginWebresourcesConfig extends CommonDBTM
       return '';
    }
 
-   public function showForm(): bool
+   public function showForm($ID, array $options = []): bool
    {
       if (!Session::haveRight('config', UPDATE)) {
          return false;
