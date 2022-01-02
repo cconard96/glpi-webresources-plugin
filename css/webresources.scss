@@ -25,25 +25,12 @@
    padding: 10px;
    display: flex;
    align-items: center;
-   background-color: #fbfbfb;
-   border: 1px solid #d6d6d6;
+   border: var(--input-border);
 
    .select2 {
       min-width: 150px;
    }
 
-   .select2-selection {
-      height: 30px;
-
-      .select2-selection__rendered {
-         font-size: 13px;
-         line-height: 29px;
-      }
-
-      .select2-selection__arrow {
-         height: 25px;
-      }
-   }
    /** The select style here is just to prevent jarring changes between page load and when it gets converted to a select2. */
    select {
       height: 30px;
@@ -51,14 +38,6 @@
       line-height: 29px;
       min-width: 150px;
       text-align-last: center;
-   }
-
-   input[type=text][name=search]:not([type=submit]):not([type=button]) {
-      flex: 1 0 auto;
-      border-radius: unset;
-      background-color: white !important;
-      padding: 5px 10px;
-      font-size: 13px;
    }
 }
 
@@ -69,12 +48,12 @@
 
 .webresources-categories {
    .webresources-category {
-      border-top: 1px solid black;
+      border-top: 1px solid var(--tblr-body-color);
       margin-bottom: 15px;
 
       .webresources-category-header {
          font-size: 1.2em;
-         border-top: 4px solid black;
+         border-top: 4px solid var(--tblr-body-color);
          width: fit-content;
          padding-right: 10px;
       }
@@ -92,7 +71,8 @@
          }
 
          &:hover {
-            background-color: #F0F0F0;
+            background-color: var(--tblr-muted);
+            opacity: 0.6;
          }
 
          .webresources-item-icon {
