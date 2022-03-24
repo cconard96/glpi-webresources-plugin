@@ -85,7 +85,7 @@ class PluginWebresourcesConfig extends CommonDBTM
    {
       if ($item->getType() === 'Config') {
          $config = new self();
-         $config->showForm();
+         $config->showForm(-1);
       }
    }
 
