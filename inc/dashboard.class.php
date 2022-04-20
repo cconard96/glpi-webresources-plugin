@@ -138,7 +138,7 @@ class PluginWebresourcesDashboard extends CommonGLPI {
                $color = $icodata['color'];
             } else {
                $ico = Supplier::getIcon(); // '@auto'
-               $color = '#000000';
+               $color = 'inherit';
             }
             $suppliertype_name = $types[$data['suppliertypes_id']];
             $resources[$suppliertype_name][] = [
@@ -195,7 +195,7 @@ class PluginWebresourcesDashboard extends CommonGLPI {
             $resources[$appliancetype_name][] = [
                'name' => $data['name'],
                'link' => $data['address'],
-               'color' => '#000000',
+               'color' => 'inherit',
                'icon' => Appliance::getIcon(),
                'comment' => $data['comment'] ?? ''
             ];
@@ -204,7 +204,7 @@ class PluginWebresourcesDashboard extends CommonGLPI {
             $resources[$appliancetype_name][] = [
                'name' => $data['name'] . ' (Management)',
                'link' => $data['backoffice'],
-               'color' => '#000000',
+               'color' => 'inherit',
                'icon' => Appliance::getIcon(),
                'comment' => $data['comment'] ?? ''
             ];
@@ -246,7 +246,7 @@ class PluginWebresourcesDashboard extends CommonGLPI {
                $color = $icodata['color'];
             } else {
                $ico = Entity::getIcon();
-               $color = '#000000';
+               $color = 'inherit';
             }
             $resources[$category][] = [
                'name'   => $data['completename'],
