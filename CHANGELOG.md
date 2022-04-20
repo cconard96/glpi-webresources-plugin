@@ -1,5 +1,12 @@
 # Web Resources Plugin for GLPI Changelog
 
+## [2.0.0]
+
+### Added
+- Added web resource dashboard to Central (homepage) as a tab
+- List view for resources
+- Improved dark theme support
+
 ## [1.3.2]
 
 ### Fixed (Backend)
