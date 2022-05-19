@@ -45,12 +45,15 @@ function plugin_init_webresources()
          'Entity' => 'plugin_webresources_preupdateitem',
       ];
       $PLUGIN_HOOKS['pre_item_purge']['webresources'] = 'plugin_webresources_preItemPurge';
-      $PLUGIN_HOOKS['add_css']['webresources'][] = 'css/webresources.scss';
 
-      // If current URL contains 'front/central.php' or 'webresources/front/dashboard.php', include the dashboard.js script
-      if (strpos($_SERVER['REQUEST_URI'], 'front/central.php') !== false || strpos($_SERVER['REQUEST_URI'], 'webresources/front/dashboard.php') !== false) {
-         $PLUGIN_HOOKS['add_javascript']['webresources'][] = 'js/dashboard.js';
-      }
+       if (!isCommandLine()) {
+           // Do not load CSS or JS in CLI mode
+           $PLUGIN_HOOKS['add_css']['webresources'][] = 'css/webresources.scss';
+           // If current URL contains 'front/central.php' or 'webresources/front/dashboard.php', include the dashboard.js script
+           if (strpos($_SERVER['REQUEST_URI'], 'front/central.php') !== false || strpos($_SERVER['REQUEST_URI'], 'webresources/front/dashboard.php') !== false) {
+               $PLUGIN_HOOKS['add_javascript']['webresources'][] = 'js/dashboard.js';
+           }
+       }
    }
 }
 
