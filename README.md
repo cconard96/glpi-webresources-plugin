@@ -21,3 +21,21 @@ Please refer to the [Wiki](https://github.com/cconard96/glpi-webresources-plugin
 ## Locale Support
 - Contribute to existing localizations on [POEditor](https://poeditor.com/join/project?hash=H4Yugw8tw6).
 - To request new languages, please open a GitHub issue.
+
+## Version Support
+
+Multiple versions of this plugin are supported at the same time to ease migration.
+Only 2 major versions will be supported at the same time (Ex: v1 and v2).
+When a new minor version is released, the previous minor version will have support ended after a month.
+Only the latest bug fix version of each minor release will be supported.
+
+Note: There was no official version support policy before 2022-05-19.
+The following version table may be reduced based on the policy stated above.
+
+| Plugin Version | GLPI Versions | Start of Support | End of Support |
+|----------------|---------------|------------------|----------------|
+| 1.0.0          | 9.5.X         | 2020-07-19       | 2022-05-19     |
+| 1.1.0          | 9.5.X         | 2020-07-25       | 2022-05-19     |
+| 1.2.0          | 9.5.X         | 2020-08-02       | 2022-05-19     |
+| 1.3.2          | 9.5.X         | 2021-02-13       | In Support     |
+| 2.0.0          | 10.0.X        | 2022-04-20       | In Support     |
