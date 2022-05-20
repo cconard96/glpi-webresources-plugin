@@ -1,5 +1,10 @@
 # Web Resources Plugin for GLPI Changelog
 
+## [2.0.1]
+
+### Fixed
+- Fixed warning that would show when using the GLPI CLI
+
 ## [2.0.0]
 
 ### Added
