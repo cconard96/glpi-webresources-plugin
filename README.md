@@ -38,4 +38,4 @@ The following version table may be reduced based on the policy stated above.
 | 1.1.0          | 9.5.X         | 2020-07-25       | 2022-05-19     |
 | 1.2.0          | 9.5.X         | 2020-08-02       | 2022-05-19     |
 | 1.3.2          | 9.5.X         | 2021-02-13       | In Support     |
-| 2.0.0          | 10.0.X        | 2022-04-20       | In Support     |
+| 2.0.1          | 10.0.X        | 2022-05-20       | In Support     |
