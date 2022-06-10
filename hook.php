@@ -160,7 +160,7 @@ function plugin_webresources_showPostItemForm(array $params)
    $item = $params['item'];
    if (in_array($item::getType(), $supported_types, true)) {
       if ($item::getType() === 'Entity' && $_REQUEST['_glpi_tab'] !== 'Entity$main') {
-         return;
+         return $params;
       }
       $iterator = $DB->request([
          'SELECT' => ['icon', 'color'],
