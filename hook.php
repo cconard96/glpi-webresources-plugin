@@ -188,6 +188,7 @@ function plugin_webresources_showPostItemForm(array $params)
       $out .= '</td></tr>';
       echo $out;
    }
+   return $params;
 }
 
 function plugin_webresources_preupdateitem(CommonDBTM $item)
