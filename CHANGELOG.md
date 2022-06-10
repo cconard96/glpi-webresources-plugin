@@ -1,5 +1,10 @@
 # Web Resources Plugin for GLPI Changelog
 
+## [2.0.2]
+
+### Fixed
+- Fixed issue with the post item form hook that could cause breaks with other plugins that use it (like the Additional Fields plugin)
+
 ## [2.0.1]
 
 ### Fixed
