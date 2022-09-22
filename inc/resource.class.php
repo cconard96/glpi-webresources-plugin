@@ -644,7 +644,7 @@ JS;
 
                   if (!is_null($rel_item)) {
                      $rel_item->add($input);
-                     Event::log($input["plugin_webresources_resources_id"], __CLASS__, 4, "plugins",
+                     Event::log($input["plugin_webresources_resources_id"], __CLASS__, 4, "plugin",
                         sprintf(__('%s adds a target'), $_SESSION["glpiname"]));
                   }
                   $DB->commit();
@@ -673,7 +673,7 @@ JS;
                   if (!is_null($rel_itemtype)) {
                      unset($input['_type'], $input['addvisibility'], $input['_glpi_csrf_token']);
                      $DB->delete($rel_itemtype::getTable(), $input);
-                     Event::log($input["plugin_webresources_resources_id"], __CLASS__, 4, "plugins",
+                     Event::log($input["plugin_webresources_resources_id"], __CLASS__, 4, "plugin",
                         sprintf(__('%s deletes a target'), $_SESSION["glpiname"]));
                   }
                   $DB->commit();
