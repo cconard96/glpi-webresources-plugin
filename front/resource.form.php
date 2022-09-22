@@ -41,7 +41,7 @@ if (isset($_POST["add"])) {
    $resource->check(-1, CREATE, $_POST);
 
    $newID = $resource->add($_POST);
-   Event::log($newID, PluginWebresourcesResource::class, 4, "plugins",
+   Event::log($newID, PluginWebresourcesResource::class, 4, "plugin",
       //TRANS: %1$s is the user login, %2$s is the name of the item
       sprintf(__('%1$s adds the item %2$s'), $_SESSION["glpiname"], $_POST["name"]));
    if ($_SESSION['glpibackcreated']) {
@@ -54,7 +54,7 @@ if (isset($_POST["add"])) {
    $resource->check($_POST["id"], PURGE);
    $resource->delete($_POST, 1);
 
-   Event::log($_POST["id"], PluginWebresourcesResource::class, 4, "plugins",
+   Event::log($_POST["id"], PluginWebresourcesResource::class, 4, "plugin",
       //TRANS: %s is the user login
       sprintf(__('%s purges an item'), $_SESSION["glpiname"]));
    $resource->redirectToList();
@@ -63,7 +63,7 @@ if (isset($_POST["add"])) {
    $resource->check($_POST["id"], UPDATE);
 
    $resource->update($_POST);
-   Event::log($_POST["id"], PluginWebresourcesResource::class, 4, "plugins",
+   Event::log($_POST["id"], PluginWebresourcesResource::class, 4, "plugin",
       //TRANS: %s is the user login
       sprintf(__('%s updates an item'), $_SESSION["glpiname"]));
 
@@ -98,7 +98,7 @@ if (isset($_POST["add"])) {
       }
       if (!is_null($item)) {
          $item->add($_POST);
-         Event::log($_POST["plugin_webresources_resources_id"], PluginWebresourcesResource::class, 4, "plugins",
+         Event::log($_POST["plugin_webresources_resources_id"], PluginWebresourcesResource::class, 4, "plugin",
             //TRANS: %s is the user login
             sprintf(__('%s adds a target'), $_SESSION["glpiname"]));
       }
