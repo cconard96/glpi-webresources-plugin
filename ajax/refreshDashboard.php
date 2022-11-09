@@ -42,7 +42,7 @@ if (!isset($_REQUEST['view_mode'])) {
     $_REQUEST['view_mode'] = 'grid';
 }
 
-header('Content-Type', 'text/html');
+header('Content-Type: text/html', true);
 switch ($_REQUEST['view_mode']) {
    case 'grid':
       echo PluginWebresourcesDashboard::getDashboardContentGrid($_REQUEST['context']);
