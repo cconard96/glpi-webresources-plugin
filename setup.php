@@ -21,7 +21,7 @@
  --------------------------------------------------------------------------
  */
 
-define('PLUGIN_WEBRESOURCES_VERSION', '2.0.1');
+define('PLUGIN_WEBRESOURCES_VERSION', '2.0.3');
 define('PLUGIN_WEBRESOURCES_MIN_GLPI', '10.0.0');
 define('PLUGIN_WEBRESOURCES_MAX_GLPI', '10.1.0');
 
