@@ -417,7 +417,7 @@ class PluginWebresourcesResource extends CommonDBVisible implements ExtraVisibil
       echo "<td>";
       $users_id = (isset($this->fields['users_id']) && !empty($this->fields['users_id'])) ? $this->fields['users_id'] : $_SESSION['glpiID'];
       echo Html::hidden('users_id', ['value' => $users_id]);
-      Html::autocompletionTextField($this, "name", ['size' => 34]);
+      echo Html::input('name', ['value' => $this->fields['name']]);
       echo "</td><td>".__('Link', 'webresources')."</td><td>";
       echo Html::input('link', [
          'value'  => $this->fields['link'] ?? ''
