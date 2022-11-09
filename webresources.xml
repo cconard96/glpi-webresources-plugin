@@ -31,6 +31,11 @@ For more information about URI schemes please refer to https://en.wikipedia.org/
     </authors>
     <versions>
         <version>
+            <num>2.0.3</num>
+            <compatibility>~10.0.0</compatibility>
+            <download_url>https://github.com/cconard96/glpi-webresources-plugin/releases/download/v2.0.3/glpi-webresources-v2.0.3.tar.bz2</download_url>
+        </version>
+        <version>
             <num>2.0.2</num>
             <compatibility>~10.0.0</compatibility>
             <download_url>https://github.com/cconard96/glpi-webresources-plugin/releases/download/v2.0.2/glpi-webresources-v2.0.2.tar.bz2</download_url>
