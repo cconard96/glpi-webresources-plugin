@@ -224,3 +224,16 @@ function plugin_webresources_preItemPurge(CommonDBTM $item)
       ]);
    }
 }
+
+function plugin_webresources_redefine_menus($menu)
+{
+    $menu['webresources'] = [
+        'title' => PluginWebresourcesResource::getTypeName(Session::getPluralNumber()),
+        'default'  => PluginWebresourcesDashboard::getSearchURL(false),
+        'icon' => PluginWebresourcesDashboard::getIcon(),
+        'links' => [
+            'search' => PluginWebresourcesDashboard::getSearchURL(false),
+        ],
+    ];
+    return $menu;
+}
