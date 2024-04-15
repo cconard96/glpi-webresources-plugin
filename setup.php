@@ -32,9 +32,14 @@ function plugin_init_webresources()
 
    $plugin = new Plugin();
    if ($plugin->isInstalled('webresources') && $plugin->isActivated('webresources')) {
+       Profile::$helpdesk_rights[] = PluginWebresourcesResource::$rightname;
       $config = Config::getConfigurationValues('plugin:Webresources', ['menu']);
       if (Session::haveRight(PluginWebresourcesResource::$rightname, READ)) {
-         $PLUGIN_HOOKS['menu_toadd']['webresources'] = [$config['menu'] ?? 'plugins' => 'PluginWebresourcesDashboard'];
+         if (Session::getCurrentInterface() === 'central') {
+             $PLUGIN_HOOKS['menu_toadd']['webresources'] = [$config['menu'] ?? 'plugins' => 'PluginWebresourcesDashboard'];
+         } else {
+             $PLUGIN_HOOKS[\Glpi\Plugin\Hooks::REDEFINE_MENUS]['webresources'] = 'plugin_webresources_redefine_menus';
+         }
       }
       Plugin::registerClass('PluginWebresourcesProfile', ['addtabon' => ['Profile']]);
       Plugin::registerClass('PluginWebresourcesConfig', ['addtabon' => 'Config']);
