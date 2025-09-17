@@ -23,7 +23,6 @@
 
 class PluginWebresourcesProfile extends Profile
 {
-
    public static $rightname = "config";
 
    public function getTabNameForItem(CommonGLPI $item, $withtemplate = 0)
