@@ -23,17 +23,17 @@
 
 function plugin_webresources_install()
 {
-   global $DB;
+    global $DB;
 
-   $res_table = PluginWebresourcesResource::getTable();
-   $res_entity_table = PluginWebresourcesResource_Entity::getTable();
-   $res_profile_table = PluginWebresourcesResource_Profile::getTable();
-   $res_group_table = PluginWebresourcesResource_Group::getTable();
-   $res_user_table = PluginWebresourcesResource_User::getTable();
-   $clean_install = false;
+    $res_table = PluginWebresourcesResource::getTable();
+    $res_entity_table = PluginWebresourcesResource_Entity::getTable();
+    $res_profile_table = PluginWebresourcesResource_Profile::getTable();
+    $res_group_table = PluginWebresourcesResource_Group::getTable();
+    $res_user_table = PluginWebresourcesResource_User::getTable();
+    $clean_install = false;
 
-   if (!$DB->tableExists($res_table)) {
-      $query = "CREATE TABLE `{$res_table}` (
+    if (!$DB->tableExists($res_table)) {
+        $query = "CREATE TABLE `{$res_table}` (
                   `id` int(11) NOT NULL auto_increment,
                   `users_id` int(11) NOT NULL,
                   `name` varchar(255) NOT NULL,
@@ -43,21 +43,21 @@ function plugin_webresources_install()
                   `plugin_webresources_categories_id` int(11) DEFAULT 0,
                 PRIMARY KEY (`id`)
                ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
-      $DB->queryOrDie($query, 'Error creating Web Resource table' . $DB->error());
-      $clean_install = true;
-   }
-   if (!$DB->tableExists($res_entity_table)) {
-      $query = "CREATE TABLE `{$res_entity_table}` (
+        $DB->doQuery($query);
+        $clean_install = true;
+    }
+    if (!$DB->tableExists($res_entity_table)) {
+        $query = "CREATE TABLE `{$res_entity_table}` (
                   `id` int(11) NOT NULL auto_increment,
                   `plugin_webresources_resources_id` int(11) NOT NULL,
                   `entities_id` int(11) NOT NULL,
                   `is_recursive` tinyint(1) DEFAULT 0,
                 PRIMARY KEY (`id`)
                ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
-      $DB->queryOrDie($query, 'Error creating Web Resource Entity table' . $DB->error());
-   }
-   if (!$DB->tableExists($res_profile_table)) {
-      $query = "CREATE TABLE `{$res_profile_table}` (
+        $DB->doQuery($query);
+    }
+    if (!$DB->tableExists($res_profile_table)) {
+        $query = "CREATE TABLE `{$res_profile_table}` (
                   `id` int(11) NOT NULL auto_increment,
                   `plugin_webresources_resources_id` int(11) NOT NULL,
                   `profiles_id` int(11) NOT NULL,
@@ -65,10 +65,10 @@ function plugin_webresources_install()
                   `is_recursive` tinyint(1) DEFAULT 0,
                 PRIMARY KEY (`id`)
                ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
-      $DB->queryOrDie($query, 'Error creating Web Resource Profile table' . $DB->error());
-   }
-   if (!$DB->tableExists($res_group_table)) {
-      $query = "CREATE TABLE `{$res_group_table}` (
+        $DB->doQuery($query);
+    }
+    if (!$DB->tableExists($res_group_table)) {
+        $query = "CREATE TABLE `{$res_group_table}` (
                   `id` int(11) NOT NULL auto_increment,
                   `plugin_webresources_resources_id` int(11) NOT NULL,
                   `groups_id` int(11) NOT NULL,
@@ -76,153 +76,153 @@ function plugin_webresources_install()
                   `is_recursive` tinyint(1) DEFAULT 0,
                 PRIMARY KEY (`id`)
                ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
-      $DB->queryOrDie($query, 'Error creating Web Resource Group table' . $DB->error());
-   }
-   if (!$DB->tableExists($res_user_table)) {
-      $query = "CREATE TABLE `{$res_user_table}` (
+        $DB->doQuery($query);
+    }
+    if (!$DB->tableExists($res_user_table)) {
+        $query = "CREATE TABLE `{$res_user_table}` (
                   `id` int(11) NOT NULL auto_increment,
                   `plugin_webresources_resources_id` int(11) NOT NULL,
                   `users_id` int(11) NOT NULL,
                 PRIMARY KEY (`id`)
                ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
-      $DB->queryOrDie($query, 'Error creating Web Resource User table' . $DB->error());
-   }
+        $DB->doQuery($query);
+    }
 
-   $cat_table = PluginWebresourcesCategory::getTable();
-   if (!$DB->tableExists($cat_table)) {
-      $query = "CREATE TABLE `{$cat_table}` (
+    $cat_table = PluginWebresourcesCategory::getTable();
+    if (!$DB->tableExists($cat_table)) {
+        $query = "CREATE TABLE `{$cat_table}` (
                   `id` int(11) NOT NULL auto_increment,
                   `name` varchar(255) NOT NULL,
                   `comment` TEXT DEFAULT NULL,
                 PRIMARY KEY (`id`)
                ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
-      $DB->queryOrDie($query, 'Error creating Web Resource Category table' . $DB->error());
-   }
+        $DB->doQuery($query);
+    }
 
-   if (!$DB->tableExists('glpi_plugin_webresources_autoicons')) {
-      $query = "CREATE TABLE `glpi_plugin_webresources_autoicons` (
+    if (!$DB->tableExists('glpi_plugin_webresources_autoicons')) {
+        $query = "CREATE TABLE `glpi_plugin_webresources_autoicons` (
                   `itemtype` varchar(100) NOT NULL,
                   `items_id` int(11) NOT NULL,
                   `icon` varchar(255) DEFAULT NULL,
                   `color` varchar(16) NOT NULL DEFAULT '#000000',
                 PRIMARY KEY (`itemtype`, `items_id`)
                ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
-      $DB->queryOrDie($query, 'Error creating Web Resource auto-icon table' . $DB->error());
-   }
+        $DB->doQuery($query);
+    }
 
-   if (!count(Config::getConfigurationValues('plugin:Webresources'))) {
-      Config::setConfigurationValues('plugin:Webresources', [
-         'config_class'    => PluginWebresourcesConfig::class,
-         'menu'            => 'plugins',
-         'use_duckduckgo'  => 0,
-         'use_google'      => 0,
-      ]);
-   }
+    if (!count(Config::getConfigurationValues('plugin:Webresources'))) {
+        Config::setConfigurationValues('plugin:Webresources', [
+            'config_class'    => PluginWebresourcesConfig::class,
+            'menu'            => 'plugins',
+            'use_duckduckgo'  => 0,
+            'use_google'      => 0,
+        ]);
+    }
 
-   $migration = new Migration(PLUGIN_WEBRESOURCES_VERSION);
-   if ($clean_install) {
-      $migration->addRight(PluginWebresourcesResource::$rightname);
-   }
-   $migration->executeMigration();
-	return true;
+    $migration = new Migration(PLUGIN_WEBRESOURCES_VERSION);
+    if ($clean_install) {
+        $migration->addRight(PluginWebresourcesResource::$rightname);
+    }
+    $migration->executeMigration();
+    return true;
 }
 
 function plugin_webresources_uninstall()
 {
-   global $DB;
+    global $DB;
 
-   $tables = [PluginWebresourcesResource::getTable(), PluginWebresourcesResource_Entity::getTable(),
-      PluginWebresourcesResource_Profile::getTable(), PluginWebresourcesResource_Group::getTable(),
-      PluginWebresourcesResource_User::getTable(), PluginWebresourcesCategory::getTable(), 'glpi_plugin_webresources_autoicons'];
+    $tables = [PluginWebresourcesResource::getTable(), PluginWebresourcesResource_Entity::getTable(),
+        PluginWebresourcesResource_Profile::getTable(), PluginWebresourcesResource_Group::getTable(),
+        PluginWebresourcesResource_User::getTable(), PluginWebresourcesCategory::getTable(), 'glpi_plugin_webresources_autoicons'];
 
-   foreach ($tables as $table) {
-      if ($DB->tableExists($table)) {
-         $DB->queryOrDie('DROP TABLE'.$DB::quoteName($table));
-      }
-   }
-   Config::deleteConfigurationValues('plugin:Webresources', [
-      'config_class',
-      'use_duckduckgo',
-      'use_google'
-   ]);
-	return true;
+    foreach ($tables as $table) {
+        if ($DB->tableExists($table)) {
+            $DB->queryOrDie('DROP TABLE'.$DB::quoteName($table));
+        }
+    }
+    Config::deleteConfigurationValues('plugin:Webresources', [
+        'config_class',
+        'use_duckduckgo',
+        'use_google'
+    ]);
+    return true;
 }
 
 function plugin_webresources_getDropdown() {
-   return ['PluginWebresourcesCategory' => PluginWebresourcesCategory::getTypeName(2)];
+    return ['PluginWebresourcesCategory' => PluginWebresourcesCategory::getTypeName(2)];
 }
 
 function plugin_webresources_showPostItemForm(array $params)
 {
-   global $DB;
+    global $DB;
 
-   static $supported_types = [Entity::class, Supplier::class];
-   $item = $params['item'];
-   if (in_array($item::getType(), $supported_types, true)) {
-      if ($item::getType() === 'Entity' && $_REQUEST['_glpi_tab'] !== 'Entity$main') {
-         return $params;
-      }
-      $iterator = $DB->request([
-         'SELECT' => ['icon', 'color'],
-         'FROM'   => 'glpi_plugin_webresources_autoicons',
-         'WHERE'  => [
-            'itemtype'  => $item::getType(),
-            'items_id'  => $item->getID()
-         ]
-      ]);
-      $ico = '';
-      $color = '#808080';
-      if (count($iterator)) {
-         $data = $iterator->current();
-         $ico = $data['icon'];
-         $color = $data['color'];
-      }
-      $out = '<tr><td>'.__('Icon', 'webresources').'</td><td>';
-      $out .= Html::input('webresources_icon', [
-         'value'  => $ico
-      ]);
-      $out .= '</td><td>'.__('Icon color', 'webresources').'</td><td>';
-      $out .= Html::showColorField('webresources_color', [
-         'value'  => $color,
-         'display'   => false
-      ]);
-      $out .= '</td></tr>';
-      echo $out;
-   }
-   return $params;
+    static $supported_types = [Entity::class, Supplier::class];
+    $item = $params['item'];
+    if (in_array($item::getType(), $supported_types, true)) {
+        if ($item::getType() === 'Entity' && $_REQUEST['_glpi_tab'] !== 'Entity$main') {
+            return $params;
+        }
+        $iterator = $DB->request([
+            'SELECT' => ['icon', 'color'],
+            'FROM'   => 'glpi_plugin_webresources_autoicons',
+            'WHERE'  => [
+                'itemtype'  => $item::getType(),
+                'items_id'  => $item->getID()
+            ]
+        ]);
+        $ico = '';
+        $color = '#808080';
+        if (count($iterator)) {
+            $data = $iterator->current();
+            $ico = $data['icon'];
+            $color = $data['color'];
+        }
+        $out = '<tr><td>'.__('Icon', 'webresources').'</td><td>';
+        $out .= Html::input('webresources_icon', [
+            'value'  => $ico
+        ]);
+        $out .= '</td><td>'.__('Icon color', 'webresources').'</td><td>';
+        $out .= Html::showColorField('webresources_color', [
+            'value'  => $color,
+            'display'   => false
+        ]);
+        $out .= '</td></tr>';
+        echo $out;
+    }
+    return $params;
 }
 
 function plugin_webresources_preupdateitem(CommonDBTM $item)
 {
-   global $DB;
+    global $DB;
 
-   static $supported_types = [Entity::class, Supplier::class, Appliance::class];
-   if (isset($item->input['webresources_icon']) && in_array($item::getType(), $supported_types, true)) {
-      $DB->updateOrInsert('glpi_plugin_webresources_autoicons', [
-         'itemtype'  => $item::getType(),
-         'items_id'  => $item->getID(),
-         'icon'      => $item->input['webresources_icon'],
-         'color'     => $item->input['webresources_color']
-      ], [
-         'itemtype'  => $item::getType(),
-         'items_id'  => $item->getID(),
-      ]);
-      unset($item->input['webresources_icon']);
-      unset($item->input['webresources_color']);
-   }
+    static $supported_types = [Entity::class, Supplier::class, Appliance::class];
+    if (isset($item->input['webresources_icon']) && in_array($item::getType(), $supported_types, true)) {
+        $DB->updateOrInsert('glpi_plugin_webresources_autoicons', [
+            'itemtype'  => $item::getType(),
+            'items_id'  => $item->getID(),
+            'icon'      => $item->input['webresources_icon'],
+            'color'     => $item->input['webresources_color']
+        ], [
+            'itemtype'  => $item::getType(),
+            'items_id'  => $item->getID(),
+        ]);
+        unset($item->input['webresources_icon']);
+        unset($item->input['webresources_color']);
+    }
 }
 
 function plugin_webresources_preItemPurge(CommonDBTM $item)
 {
-   global $DB;
+    global $DB;
 
-   static $supported_types = [Entity::class, Supplier::class, Appliance::class];
-   if (in_array($item::getType(), $supported_types, true)) {
-      $DB->delete('glpi_plugin_webresources_autoicons', [
-         'itemtype'  => $item::getType(),
-         'items_id'  => $item->getID(),
-      ]);
-   }
+    static $supported_types = [Entity::class, Supplier::class, Appliance::class];
+    if (in_array($item::getType(), $supported_types, true)) {
+        $DB->delete('glpi_plugin_webresources_autoicons', [
+            'itemtype'  => $item::getType(),
+            'items_id'  => $item->getID(),
+        ]);
+    }
 }
 
 function plugin_webresources_redefine_menus($menu)

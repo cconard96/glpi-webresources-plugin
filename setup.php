@@ -21,9 +21,9 @@
  --------------------------------------------------------------------------
  */
 
-define('PLUGIN_WEBRESOURCES_VERSION', '2.0.4');
-define('PLUGIN_WEBRESOURCES_MIN_GLPI', '10.0.0');
-define('PLUGIN_WEBRESOURCES_MAX_GLPI', '10.1.0');
+define('PLUGIN_WEBRESOURCES_VERSION', '3.0.0');
+define('PLUGIN_WEBRESOURCES_MIN_GLPI', '11.0.0');
+define('PLUGIN_WEBRESOURCES_MAX_GLPI', '11.1.0');
 
 function plugin_init_webresources()
 {

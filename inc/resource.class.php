@@ -112,7 +112,8 @@ class PluginWebresourcesResource extends CommonDBVisible implements ExtraVisibil
       return true;
    }
 
-   public function showVisibility() {
+   public function showVisibility(): bool
+   {
       global $CFG_GLPI;
 
       $ID      = $this->fields['id'];
@@ -471,8 +472,6 @@ class PluginWebresourcesResource extends CommonDBVisible implements ExtraVisibil
 
       $this->showFormButtons($options);
 
-      $plugin_root = Plugin::getWebDir('webresources');
-
       $script = <<<JS
 $(document).ready(function() {
    function isWebURL(url) {
@@ -485,12 +484,12 @@ $(document).ready(function() {
       $.ajax({
          method: 'GET',
          async: false,
-         url: ("{$plugin_root}/ajax/scraper.php"),
+         url: ("/plugins/webresources/ajax/scraper.php"),
          data: {
             url: url
          },
          success: function(icons) {
-            result = JSON.parse(icons);
+            result = icons;
          }
       });
       return result;

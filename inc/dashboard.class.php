@@ -51,7 +51,7 @@ class PluginWebresourcesDashboard extends CommonGLPI {
    public static function getMenuContent()
    {
       $menu = parent::getMenuContent();
-      $menu['links']['search'] = PluginWebresourcesResource::getSearchURL(false);
+      $menu['links']['<i class="ti ti-search"></i><span>' . __('Search') . '</span>'] = PluginWebresourcesResource::getSearchURL(false);
       if (PluginWebresourcesResource::canCreate()) {
          $menu['links']['add'] = PluginWebresourcesResource::getFormURL(false);
       }

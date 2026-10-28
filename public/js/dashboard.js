@@ -1,5 +1,5 @@
 window.GlpiPluginWebResources = {
-   plugin_root_url: CFG_GLPI.root_doc + '/' + GLPI_PLUGINS_PATH.webresources,
+   plugin_root_url: CFG_GLPI.root_doc + '/plugins/webresources',
    manageUrl: (context, view_mode) => {
       // if current base URL doesn't contain '/front/central.php'
       if (window.location.href.indexOf('/front/central.php') === -1) {

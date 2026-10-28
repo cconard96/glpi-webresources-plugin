@@ -21,11 +21,13 @@
  --------------------------------------------------------------------------
  */
 
+use Glpi\Exception\Http\NotFoundHttpException;
+
 include ('../../../inc/includes.php');
 
 $plugin = new Plugin();
 if (!$plugin->isActivated('webresources')) {
-   Html::displayNotFoundError();
+    throw new NotFoundHttpException();
 }
 
 Html::header_nocache();
@@ -36,5 +38,5 @@ if (!isset($_REQUEST['url'])) {
    throw new RuntimeException('Required argument missing!');
 }
 
-header('Content-Type', 'application/json');
+header('Content-Type: application/json; charset=UTF-8"');
 echo json_encode(PluginWebresourcesScraper::get($_REQUEST['url']));

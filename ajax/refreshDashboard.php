@@ -20,11 +20,13 @@
  --------------------------------------------------------------------------
  */
 
+use Glpi\Exception\Http\NotFoundHttpException;
+
 include ('../../../inc/includes.php');
 
 $plugin = new Plugin();
 if (!$plugin->isActivated('webresources')) {
-   Html::displayNotFoundError();
+    throw new NotFoundHttpException();
 }
 
 Html::header_nocache();
@@ -42,7 +44,7 @@ if (!isset($_REQUEST['view_mode'])) {
     $_REQUEST['view_mode'] = 'grid';
 }
 
-header('Content-Type: text/html', true);
+header('Content-Type: text/html');
 switch ($_REQUEST['view_mode']) {
    case 'grid':
       echo PluginWebresourcesDashboard::getDashboardContentGrid($_REQUEST['context']);
