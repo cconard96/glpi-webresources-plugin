@@ -62,7 +62,8 @@
    }
 }
 
-#page .webresources-dashboard[data-view-mode="grid"] {
+#page .webresources-dashboard[data-view-mode="grid"],
+#page .webresources-preview[data-view-mode="grid"] {
    .webresources-item {
       display: inline-block;
       margin-left: 15px;

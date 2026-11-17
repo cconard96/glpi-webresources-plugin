@@ -21,14 +21,12 @@
  --------------------------------------------------------------------------
  */
 
-use Glpi\Toolbox\Sanitizer;
-
 /**
  * Web Resources Dashboard
  */
 class PluginWebresourcesDashboard extends CommonGLPI {
 
-   public static $rightname = 'plugin_webresources_resource';
+   public static string $rightname = 'plugin_webresources_resource';
 
    public static function getTypeName($nb = 0)
    {
@@ -41,17 +39,18 @@ class PluginWebresourcesDashboard extends CommonGLPI {
    }
 
    public function getTabNameForItem(CommonGLPI $item, $withtemplate = 0) {
-      return self::getTypeName();
+      return self::createTabEntry(self::getTypeName(), 0, null, self::getIcon());
    }
 
    public static function displayTabContentForItem(CommonGLPI $item, $tabnum = 1, $withtemplate = 0) {
       self::showDashboard();
+      return true;
    }
 
    public static function getMenuContent()
    {
       $menu = parent::getMenuContent();
-      $menu['links']['<i class="ti ti-search"></i><span>' . __('Search') . '</span>'] = PluginWebresourcesResource::getSearchURL(false);
+      $menu['links']['<i class="ti ti-search"></i><span>' . __s('Search') . '</span>'] = PluginWebresourcesResource::getSearchURL(false);
       if (PluginWebresourcesResource::canCreate()) {
          $menu['links']['add'] = PluginWebresourcesResource::getFormURL(false);
       }
@@ -88,13 +87,19 @@ class PluginWebresourcesDashboard extends CommonGLPI {
    {
       global $DB;
 
+      $res_table = PluginWebresourcesResource::getTable();
+      // DISTINCT: a resource matching several targets (entity + profile...) must be listed only once
       $iterator = $DB->request([
-            'FROM'   => PluginWebresourcesResource::getTable()
+            'SELECT'   => ["{$res_table}.*"],
+            'DISTINCT' => true,
+            'FROM'     => $res_table,
+            'ORDER'    => ["{$res_table}.name"],
          ] + PluginWebresourcesResource::getVisibilityCriteria(true));
       $resources = [];
       foreach ($iterator as $data) {
-         $resources[$data['plugin_webresources_categories_id']][] = $data;
+         $resources[(int) $data['plugin_webresources_categories_id']][] = $data;
       }
+      ksort($resources);
 
       return $resources;
    }
@@ -140,7 +145,7 @@ class PluginWebresourcesDashboard extends CommonGLPI {
                $ico = Supplier::getIcon(); // '@auto'
                $color = 'inherit';
             }
-            $suppliertype_name = $types[$data['suppliertypes_id']];
+            $suppliertype_name = $types[$data['suppliertypes_id']] ?? $types[0];
             $resources[$suppliertype_name][] = [
                'name' => $data['name'],
                'link' => $data['website'],
@@ -190,7 +195,7 @@ class PluginWebresourcesDashboard extends CommonGLPI {
       ] + getEntitiesRestrictCriteria());
       $resources = [];
       foreach ($iterator as $data) {
-         $appliancetype_name = $types[$data['appliancetypes_id']];
+         $appliancetype_name = $types[$data['appliancetypes_id']] ?? $types[0];
          if (!empty($data['address'])) {
             $resources[$appliancetype_name][] = [
                'name' => $data['name'],
@@ -289,8 +294,8 @@ class PluginWebresourcesDashboard extends CommonGLPI {
       }
 
       // Experimental Feature for baking generated icons to a json file. Not present in release unless manually created.
-      if (file_exists('../resources/favicon_map.json')) {
-         $baked_favicon_map = json_decode(file_get_contents('../resources/favicon_map.json'), true);
+      if (file_exists(__DIR__ . '/../resources/favicon_map.json')) {
+         $baked_favicon_map = json_decode(file_get_contents(__DIR__ . '/../resources/favicon_map.json'), true);
          foreach ($to_fetch as $i => $url) {
             $key = md5($url);
             $host = parse_url($url, PHP_URL_HOST);
@@ -398,16 +403,16 @@ class PluginWebresourcesDashboard extends CommonGLPI {
        self::populateAutoIcons($resources, $regen_icons);
 
        ob_start();
-       echo '<div class="webresources-dashboard" data-view-mode="grid" data-context="'.$context.'"><div class="webresources-header">'.$dashboard_header.'</div>';
+       echo '<div class="webresources-dashboard" data-view-mode="grid" data-context="'.htmlescape($context).'"><div class="webresources-header">'.htmlescape($dashboard_header).'</div>';
        echo '<div class="webresources-categories">';
        foreach ($resources as $cat_id => $cat_resources) {
-           echo '<div id="webresources-category-'.$cat_id.'" class="webresources-category">';
+           echo '<div id="webresources-category-'.htmlescape(is_numeric($cat_id) ? $cat_id : md5((string) $cat_id)).'" class="webresources-category">';
            if (is_numeric($cat_id)) {
-               $cat_name = $cat_id === 0 ? __('Uncategorized', 'webresources') : $categories[$cat_id];
+               $cat_name = $categories[$cat_id] ?? __('Uncategorized', 'webresources');
            } else {
                $cat_name = $cat_id;
            }
-           echo '<div class="webresources-category-header">'.$cat_name.'</div>';
+           echo '<div class="webresources-category-header">'.htmlescape($cat_name).'</div>';
            echo '<div class="webresources-items">';
            foreach ($cat_resources as $resource) {
                echo self::getResourceAsIcon($resource, $default_icon);
@@ -432,16 +437,16 @@ class PluginWebresourcesDashboard extends CommonGLPI {
         self::populateAutoIcons($resources, $regen_icons);
 
         ob_start();
-        echo '<div class="webresources-dashboard" data-view-mode="list" data-context="'.$context.'"><div class="webresources-header">'.$dashboard_header.'</div>';
+        echo '<div class="webresources-dashboard" data-view-mode="list" data-context="'.htmlescape($context).'"><div class="webresources-header">'.htmlescape($dashboard_header).'</div>';
         echo '<div class="webresources-categories">';
         foreach ($resources as $cat_id => $cat_resources) {
-            echo '<div id="webresources-category-'.$cat_id.'" class="webresources-category">';
+            echo '<div id="webresources-category-'.htmlescape(is_numeric($cat_id) ? $cat_id : md5((string) $cat_id)).'" class="webresources-category">';
             if (is_numeric($cat_id)) {
-                $cat_name = $cat_id === 0 ? __('Uncategorized', 'webresources') : $categories[$cat_id];
+                $cat_name = $categories[$cat_id] ?? __('Uncategorized', 'webresources');
             } else {
                 $cat_name = $cat_id;
             }
-            echo '<div class="webresources-category-header">'.$cat_name.'</div>';
+            echo '<div class="webresources-category-header">'.htmlescape($cat_name).'</div>';
             echo '<table class="table table-sm webresources-items">';
             foreach ($cat_resources as $resource) {
                 echo self::getResourceAsTableRow($resource, $default_icon);
@@ -466,67 +471,90 @@ class PluginWebresourcesDashboard extends CommonGLPI {
       return self::getDashboardContentList($context, $regen_icons, $skip_rights);
    }
 
-   private static function getResourceAsIcon(array $resource, string $default_icon = 'fab fa-chrome')
+   /**
+    * Normalize and HTML-escape the values of a resource before it is written in the page.
+    * Since GLPI 11, values are stored raw in the database, so they must be escaped on output.
+    * Links using a script-executing scheme (javascript:, data:, vbscript:) are neutralized.
+    */
+   private static function prepareResourceForDisplay(array $resource, string $default_icon): array
+   {
+      $name  = (string) ($resource['name'] ?? '');
+      $link  = trim((string) ($resource['link'] ?? ''));
+      $icon  = trim((string) ($resource['icon'] ?? ''));
+      $color = trim((string) ($resource['color'] ?? ''));
+
+      // Any URI scheme is allowed (market://, softwarecenter://...) except the ones that execute script.
+      // Browsers ignore control chars and whitespace inside the scheme, so strip them before checking.
+      $compact_link = preg_replace('/[\x00-\x20]+/', '', $link);
+      if ($compact_link === '' || preg_match('/^(javascript|data|vbscript):/i', $compact_link)) {
+         $link = '#';
+      }
+      if ($color !== 'inherit' && !preg_match('/^#[0-9a-f]{3,8}$/i', $color)) {
+         $color = 'inherit';
+      }
+      $is_image = PluginWebresourcesToolbox::isValidWebUrl($icon);
+
+      return [
+         'name'       => htmlescape($name),
+         'link'       => htmlescape($link),
+         'is_image'   => $is_image,
+         'image'      => $is_image ? htmlescape($icon) : '',
+         'icon_class' => htmlescape(($is_image || $icon === '') ? $default_icon : $icon),
+         'fallback'   => htmlescape($default_icon),
+         'color'      => $color,
+         'comment'    => (string) ($resource['comment'] ?? ''),
+      ];
+   }
+
+   private static function getResourceIconHtml(array $r): string
    {
       $html = '';
-      $html .= '<div class="webresources-item">';
-      $html .= '<a href="'.$resource['link'].'" target="_blank">';
+      if ($r['is_image']) {
+         $html .= '<img src="' . $r['image'] . '" title="' . $r['name'] . '" alt="' . $r['name'] . '" style="display: block" onerror="onWRImageLoadError(this);" data-fallback="' . $r['fallback'] . '"/>';
+      }
+      $html .= '<i style="color: ' . $r['color'] . ';' . ($r['is_image'] ? 'display: none' : 'display: block') . '" class="' . $r['icon_class'] . '" title="' . $r['name'] . '"></i>';
+      return $html;
+   }
+
+   private static function getResourceAsIcon(array $resource, string $default_icon = 'fab fa-chrome')
+   {
+      $r = self::prepareResourceForDisplay($resource, $default_icon);
+
+      $html = '<div class="webresources-item">';
+      $html .= '<a href="' . $r['link'] . '" target="_blank" rel="noopener noreferrer">';
       $html .= '<div class="webresources-item-icon">';
-      $icon_type = PluginWebresourcesToolbox::isValidWebUrl($resource['icon']) ? 'image' : 'icon';
-      if ($icon_type === 'image') {
-         $html .= '<img src="' . $resource['icon'] . '" title="' . $resource['name'] . '" alt="' . $resource['name'] . '" style="' . ($icon_type === 'image' ? 'display: block' : 'display: none') . '" onerror="onWRImageLoadError(this);" data-fallback="'.$default_icon.'"/>';
-      }
-
-      if ($icon_type === 'image' || ($icon_type === 'icon' && empty($resource['icon']))) {
-         $resource['icon'] = $default_icon;
-      }
-      $html .= '<i style="color: '.$resource['color'].';'.($icon_type === 'icon' ? 'display: block' : 'display: none').'" class="' . $resource['icon'] . '" title="' . $resource['name'] . '" alt="' . $resource['name'] . '"></i>';
-
+      $html .= self::getResourceIconHtml($r);
       $html .= '</div>';
-      $html .= '<div class="webresources-item-title">'.$resource['name'].'</div>';
+      $html .= '<div class="webresources-item-title">' . $r['name'] . '</div>';
       $html .= '</a>';
       $html .= '</div>';
       return $html;
    }
 
-   private static function getResourceAsTableRow(array $resource, string $default_icon = 'fab-fa-chrome')
+   private static function getResourceAsTableRow(array $resource, string $default_icon = 'fab fa-chrome')
    {
-       // Get sanitized comments and truncate to 100 chars
-       $comments_full = Sanitizer::sanitize($resource['comment'] ?? '');
-       $comments_length = strlen($comments_full);
-       $comments = Toolbox::substr($comments_full, 0, 100);
-       if ($comments_length > 100) {
-           $comments .= '...';
-       }
+      $r = self::prepareResourceForDisplay($resource, $default_icon);
 
-       $html = '<tr style="vertical-align: middle" class="webresources-item">';
-       // Show resource icon, link and name, and truncated comments as cells
-       $html .= '<td>';
-       $html .= '<a href="'.$resource['link'].'" target="_blank">';
-       $html .= '<div class="webresources-item-icon d-table-cell">';
-       $icon_type = PluginWebresourcesToolbox::isValidWebUrl($resource['icon']) ? 'image' : 'icon';
-       if ($icon_type === 'image') {
-           $html .= '<img src="' . $resource['icon'] . '" title="' . $resource['name'] . '" alt="' . $resource['name'] . '" style="' . ($icon_type === 'image' ? 'display: block' : 'display: none') . '" onerror="onWRImageLoadError(this);" data-fallback="'.$default_icon.'"/>';
-       }
+      // Plain text comment, truncated to 100 chars
+      $comments_full = trim(strip_tags($r['comment']));
+      $comments = mb_strlen($comments_full) > 100 ? mb_substr($comments_full, 0, 100) . '...' : $comments_full;
 
-       if ($icon_type === 'image' || ($icon_type === 'icon' && empty($resource['icon']))) {
-           $resource['icon'] = $default_icon;
-       }
-       $html .= '<i style="color: '.$resource['color'].';'.($icon_type === 'icon' ? 'display: block' : 'display: none').'" class="' . $resource['icon'] . '" title="' . $resource['name'] . '" alt="' . $resource['name'] . '"></i>';
-
-       $html .= '</div>';
-       $html .= '</td>';
-
-       $html .= '<td>';
-       $html .= '<a href="'.$resource['link'].'" target="_blank">'.$resource['name'].'</a>';
-       $html .= '</td>';
-
-       $html .= '<td title="'.$comments_full.'">';
-       $html .= Toolbox::substr($comments, 0, 100) ?? '';
-       $html .= '</td>';
-
-       $html .= '<tr>';
-       return $html;
+      $html = '<tr style="vertical-align: middle" class="webresources-item">';
+      $html .= '<td>';
+      $html .= '<a href="' . $r['link'] . '" target="_blank" rel="noopener noreferrer">';
+      $html .= '<div class="webresources-item-icon d-table-cell">';
+      $html .= self::getResourceIconHtml($r);
+      $html .= '</div>';
+      $html .= '</a>';
+      $html .= '</td>';
+      $html .= '<td>';
+      $html .= '<a href="' . $r['link'] . '" target="_blank" rel="noopener noreferrer">' . $r['name'] . '</a>';
+      $html .= '</td>';
+      $html .= '<td title="' . htmlescape($comments_full) . '">';
+      $html .= htmlescape($comments);
+      $html .= '</td>';
+      $html .= '</tr>';
+      return $html;
    }
 
    /**
@@ -547,13 +575,19 @@ class PluginWebresourcesDashboard extends CommonGLPI {
       ]);
       echo "<div class='input-group'>";
       echo Html::input('search', [
-         'placeholder'  => __('Search')
+         'placeholder'  => __('Search'),
+         'type'         => 'search',
       ]);
       // Show mode changer icon toggle button (grid and list views)
+      $titles = sprintf(
+         "data-title-list='%s' data-title-grid='%s'",
+         __s('List view', 'webresources'),
+         __s('Grid view', 'webresources')
+      );
       if ($view_mode === 'grid') {
-          echo "<button class='webresources-view-mode btn btn-outline-secondary'><i class='fas fa-list view-switcher' title='".__('List view', 'webresources')."'></i></button>";
+          echo "<button type='button' class='webresources-view-mode btn btn-outline-secondary' {$titles}><i class='fas fa-list view-switcher' title='".__s('List view', 'webresources')."'></i></button>";
       } else {
-          echo "<button class='webresources-view-mode btn btn-outline-secondary'><i class='fas fa-th view-switcher' title='".__('Grid view', 'webresources')."'></i></button>";
+          echo "<button type='button' class='webresources-view-mode btn btn-outline-secondary' {$titles}><i class='fas fa-th view-switcher' title='".__s('Grid view', 'webresources')."'></i></button>";
       }
       echo '</div>';
       echo '</div>';

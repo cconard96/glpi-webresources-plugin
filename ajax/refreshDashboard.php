@@ -22,8 +22,6 @@
 
 use Glpi\Exception\Http\NotFoundHttpException;
 
-include ('../../../inc/includes.php');
-
 $plugin = new Plugin();
 if (!$plugin->isActivated('webresources')) {
     throw new NotFoundHttpException();
@@ -34,7 +32,7 @@ Html::header_nocache();
 Session::checkLoginUser();
 
 if (!isset($_REQUEST['context'])) {
-   throw new RuntimeException('Required argument missing!');
+   throw new \Glpi\Exception\Http\BadRequestHttpException('Required argument missing!');
 }
 
 if (empty($_REQUEST['context'])) {
@@ -53,5 +51,5 @@ switch ($_REQUEST['view_mode']) {
       echo PluginWebresourcesDashboard::getDashboardContentList($_REQUEST['context']);
       break;
    default:
-      throw new RuntimeException('Invalid view mode!');
+      throw new \Glpi\Exception\Http\BadRequestHttpException('Invalid view mode!');
 }

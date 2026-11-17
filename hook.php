@@ -25,89 +25,174 @@ function plugin_webresources_install()
 {
     global $DB;
 
+    $charset   = DBConnection::getDefaultCharset();
+    $collation = DBConnection::getDefaultCollation();
+    $sign      = DBConnection::getDefaultPrimaryKeySignOption();
+    $table_options = "ENGINE=InnoDB DEFAULT CHARSET={$charset} COLLATE={$collation} ROW_FORMAT=DYNAMIC";
+
     $res_table = PluginWebresourcesResource::getTable();
     $res_entity_table = PluginWebresourcesResource_Entity::getTable();
     $res_profile_table = PluginWebresourcesResource_Profile::getTable();
     $res_group_table = PluginWebresourcesResource_Group::getTable();
     $res_user_table = PluginWebresourcesResource_User::getTable();
+    $cat_table = PluginWebresourcesCategory::getTable();
+    $autoicon_table = 'glpi_plugin_webresources_autoicons';
     $clean_install = false;
 
     if (!$DB->tableExists($res_table)) {
-        $query = "CREATE TABLE `{$res_table}` (
-                  `id` int(11) NOT NULL auto_increment,
-                  `users_id` int(11) NOT NULL,
+        $DB->doQuery("CREATE TABLE `{$res_table}` (
+                  `id` int {$sign} NOT NULL auto_increment,
+                  `users_id` int {$sign} NOT NULL DEFAULT '0',
                   `name` varchar(255) NOT NULL,
                   `link` varchar(255) NOT NULL,
                   `icon` varchar(255) DEFAULT NULL,
                   `color` varchar(16) NOT NULL DEFAULT '#000000',
-                  `plugin_webresources_categories_id` int(11) DEFAULT 0,
-                PRIMARY KEY (`id`)
-               ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
-        $DB->doQuery($query);
+                  `plugin_webresources_categories_id` int {$sign} NOT NULL DEFAULT '0',
+                PRIMARY KEY (`id`),
+                KEY `users_id` (`users_id`),
+                KEY `plugin_webresources_categories_id` (`plugin_webresources_categories_id`)
+               ) {$table_options}");
         $clean_install = true;
     }
     if (!$DB->tableExists($res_entity_table)) {
-        $query = "CREATE TABLE `{$res_entity_table}` (
-                  `id` int(11) NOT NULL auto_increment,
-                  `plugin_webresources_resources_id` int(11) NOT NULL,
-                  `entities_id` int(11) NOT NULL,
-                  `is_recursive` tinyint(1) DEFAULT 0,
-                PRIMARY KEY (`id`)
-               ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
-        $DB->doQuery($query);
+        $DB->doQuery("CREATE TABLE `{$res_entity_table}` (
+                  `id` int {$sign} NOT NULL auto_increment,
+                  `plugin_webresources_resources_id` int {$sign} NOT NULL DEFAULT '0',
+                  `entities_id` int {$sign} NOT NULL DEFAULT '0',
+                  `is_recursive` tinyint NOT NULL DEFAULT '0',
+                PRIMARY KEY (`id`),
+                KEY `plugin_webresources_resources_id` (`plugin_webresources_resources_id`),
+                KEY `entities_id` (`entities_id`)
+               ) {$table_options}");
     }
     if (!$DB->tableExists($res_profile_table)) {
-        $query = "CREATE TABLE `{$res_profile_table}` (
-                  `id` int(11) NOT NULL auto_increment,
-                  `plugin_webresources_resources_id` int(11) NOT NULL,
-                  `profiles_id` int(11) NOT NULL,
-                  `entities_id` int(11) NOT NULL,
-                  `is_recursive` tinyint(1) DEFAULT 0,
-                PRIMARY KEY (`id`)
-               ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
-        $DB->doQuery($query);
+        $DB->doQuery("CREATE TABLE `{$res_profile_table}` (
+                  `id` int {$sign} NOT NULL auto_increment,
+                  `plugin_webresources_resources_id` int {$sign} NOT NULL DEFAULT '0',
+                  `profiles_id` int {$sign} NOT NULL DEFAULT '0',
+                  `entities_id` int {$sign} DEFAULT NULL,
+                  `no_entity_restriction` tinyint NOT NULL DEFAULT '0',
+                  `is_recursive` tinyint NOT NULL DEFAULT '0',
+                PRIMARY KEY (`id`),
+                KEY `plugin_webresources_resources_id` (`plugin_webresources_resources_id`),
+                KEY `profiles_id` (`profiles_id`),
+                KEY `entities_id` (`entities_id`)
+               ) {$table_options}");
     }
     if (!$DB->tableExists($res_group_table)) {
-        $query = "CREATE TABLE `{$res_group_table}` (
-                  `id` int(11) NOT NULL auto_increment,
-                  `plugin_webresources_resources_id` int(11) NOT NULL,
-                  `groups_id` int(11) NOT NULL,
-                  `entities_id` int(11) NOT NULL,
-                  `is_recursive` tinyint(1) DEFAULT 0,
-                PRIMARY KEY (`id`)
-               ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
-        $DB->doQuery($query);
+        $DB->doQuery("CREATE TABLE `{$res_group_table}` (
+                  `id` int {$sign} NOT NULL auto_increment,
+                  `plugin_webresources_resources_id` int {$sign} NOT NULL DEFAULT '0',
+                  `groups_id` int {$sign} NOT NULL DEFAULT '0',
+                  `entities_id` int {$sign} DEFAULT NULL,
+                  `no_entity_restriction` tinyint NOT NULL DEFAULT '0',
+                  `is_recursive` tinyint NOT NULL DEFAULT '0',
+                PRIMARY KEY (`id`),
+                KEY `plugin_webresources_resources_id` (`plugin_webresources_resources_id`),
+                KEY `groups_id` (`groups_id`),
+                KEY `entities_id` (`entities_id`)
+               ) {$table_options}");
     }
     if (!$DB->tableExists($res_user_table)) {
-        $query = "CREATE TABLE `{$res_user_table}` (
-                  `id` int(11) NOT NULL auto_increment,
-                  `plugin_webresources_resources_id` int(11) NOT NULL,
-                  `users_id` int(11) NOT NULL,
-                PRIMARY KEY (`id`)
-               ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
-        $DB->doQuery($query);
+        $DB->doQuery("CREATE TABLE `{$res_user_table}` (
+                  `id` int {$sign} NOT NULL auto_increment,
+                  `plugin_webresources_resources_id` int {$sign} NOT NULL DEFAULT '0',
+                  `users_id` int {$sign} NOT NULL DEFAULT '0',
+                PRIMARY KEY (`id`),
+                KEY `plugin_webresources_resources_id` (`plugin_webresources_resources_id`),
+                KEY `users_id` (`users_id`)
+               ) {$table_options}");
     }
-
-    $cat_table = PluginWebresourcesCategory::getTable();
     if (!$DB->tableExists($cat_table)) {
-        $query = "CREATE TABLE `{$cat_table}` (
-                  `id` int(11) NOT NULL auto_increment,
+        $DB->doQuery("CREATE TABLE `{$cat_table}` (
+                  `id` int {$sign} NOT NULL auto_increment,
                   `name` varchar(255) NOT NULL,
                   `comment` TEXT DEFAULT NULL,
-                PRIMARY KEY (`id`)
-               ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
-        $DB->doQuery($query);
+                PRIMARY KEY (`id`),
+                KEY `name` (`name`)
+               ) {$table_options}");
     }
-
-    if (!$DB->tableExists('glpi_plugin_webresources_autoicons')) {
-        $query = "CREATE TABLE `glpi_plugin_webresources_autoicons` (
+    if (!$DB->tableExists($autoicon_table)) {
+        $DB->doQuery("CREATE TABLE `{$autoicon_table}` (
                   `itemtype` varchar(100) NOT NULL,
-                  `items_id` int(11) NOT NULL,
+                  `items_id` int {$sign} NOT NULL DEFAULT '0',
                   `icon` varchar(255) DEFAULT NULL,
                   `color` varchar(16) NOT NULL DEFAULT '#000000',
                 PRIMARY KEY (`itemtype`, `items_id`)
-               ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
-        $DB->doQuery($query);
+               ) {$table_options}");
+    }
+
+    // ---------------------------------------------------------------------
+    // Upgrade of tables created by the 1.x / 2.x versions (GLPI 9.5 / 10)
+    // ---------------------------------------------------------------------
+
+    // 1. "No entity restriction" used to be stored as a negative entity id.
+    //    It is now a dedicated flag, as in GLPI core tables, so that keys can be unsigned.
+    foreach ([$res_group_table, $res_profile_table] as $table) {
+        if (!$DB->fieldExists($table, 'no_entity_restriction')) {
+            $DB->doQuery("ALTER TABLE `{$table}` ADD `no_entity_restriction` tinyint NOT NULL DEFAULT '0' AFTER `entities_id`");
+        }
+        $DB->update($table, ['no_entity_restriction' => 1, 'entities_id' => 0], ['entities_id' => ['<', 0]]);
+        $DB->doQuery("ALTER TABLE `{$table}` MODIFY `entities_id` int {$sign} DEFAULT NULL");
+        $DB->update($table, ['entities_id' => null], ['no_entity_restriction' => 1]);
+    }
+
+    // 2. NULL values that the new column definitions do not accept anymore
+    $DB->update($res_table, ['plugin_webresources_categories_id' => 0], ['plugin_webresources_categories_id' => null]);
+    foreach ([$res_entity_table, $res_profile_table, $res_group_table] as $table) {
+        $DB->update($table, ['is_recursive' => 0], ['is_recursive' => null]);
+    }
+
+    // 3. Column types (unsigned keys when the GLPI database itself uses them)
+    $columns = [
+        $res_table => [
+            'id'                                => "int {$sign} NOT NULL AUTO_INCREMENT",
+            'users_id'                          => "int {$sign} NOT NULL DEFAULT '0'",
+            'plugin_webresources_categories_id' => "int {$sign} NOT NULL DEFAULT '0'",
+        ],
+        $res_entity_table => [
+            'id'                               => "int {$sign} NOT NULL AUTO_INCREMENT",
+            'plugin_webresources_resources_id' => "int {$sign} NOT NULL DEFAULT '0'",
+            'entities_id'                      => "int {$sign} NOT NULL DEFAULT '0'",
+            'is_recursive'                     => "tinyint NOT NULL DEFAULT '0'",
+        ],
+        $res_profile_table => [
+            'id'                               => "int {$sign} NOT NULL AUTO_INCREMENT",
+            'plugin_webresources_resources_id' => "int {$sign} NOT NULL DEFAULT '0'",
+            'profiles_id'                      => "int {$sign} NOT NULL DEFAULT '0'",
+            'entities_id'                      => "int {$sign} DEFAULT NULL",
+            'is_recursive'                     => "tinyint NOT NULL DEFAULT '0'",
+        ],
+        $res_group_table => [
+            'id'                               => "int {$sign} NOT NULL AUTO_INCREMENT",
+            'plugin_webresources_resources_id' => "int {$sign} NOT NULL DEFAULT '0'",
+            'groups_id'                        => "int {$sign} NOT NULL DEFAULT '0'",
+            'entities_id'                      => "int {$sign} DEFAULT NULL",
+            'is_recursive'                     => "tinyint NOT NULL DEFAULT '0'",
+        ],
+        $res_user_table => [
+            'id'                               => "int {$sign} NOT NULL AUTO_INCREMENT",
+            'plugin_webresources_resources_id' => "int {$sign} NOT NULL DEFAULT '0'",
+            'users_id'                         => "int {$sign} NOT NULL DEFAULT '0'",
+        ],
+        $cat_table => [
+            'id' => "int {$sign} NOT NULL AUTO_INCREMENT",
+        ],
+        $autoicon_table => [
+            'items_id' => "int {$sign} NOT NULL DEFAULT '0'",
+        ],
+    ];
+    foreach ($columns as $table => $fields) {
+        $changes = [];
+        foreach ($fields as $field => $definition) {
+            $changes[] = "MODIFY `{$field}` {$definition}";
+        }
+        $DB->doQuery("ALTER TABLE `{$table}` " . implode(', ', $changes));
+    }
+
+    // 4. Charset / collation
+    foreach (array_keys($columns) as $table) {
+        $DB->doQuery("ALTER TABLE `{$table}` CONVERT TO CHARACTER SET {$charset} COLLATE {$collation}");
     }
 
     if (!count(Config::getConfigurationValues('plugin:Webresources'))) {
@@ -137,14 +222,16 @@ function plugin_webresources_uninstall()
 
     foreach ($tables as $table) {
         if ($DB->tableExists($table)) {
-            $DB->queryOrDie('DROP TABLE'.$DB::quoteName($table));
+            $DB->dropTable($table);
         }
     }
     Config::deleteConfigurationValues('plugin:Webresources', [
         'config_class',
+        'menu',
         'use_duckduckgo',
         'use_google'
     ]);
+    $DB->delete('glpi_profilerights', ['name' => PluginWebresourcesResource::$rightname]);
     return true;
 }
 
@@ -159,7 +246,7 @@ function plugin_webresources_showPostItemForm(array $params)
     static $supported_types = [Entity::class, Supplier::class];
     $item = $params['item'];
     if (in_array($item::getType(), $supported_types, true)) {
-        if ($item::getType() === 'Entity' && $_REQUEST['_glpi_tab'] !== 'Entity$main') {
+        if ($item::getType() === 'Entity' && ($_REQUEST['_glpi_tab'] ?? 'Entity$main') !== 'Entity$main') {
             return $params;
         }
         $iterator = $DB->request([
@@ -177,11 +264,11 @@ function plugin_webresources_showPostItemForm(array $params)
             $ico = $data['icon'];
             $color = $data['color'];
         }
-        $out = '<tr><td>'.__('Icon', 'webresources').'</td><td>';
+        $out = '<tr><td>'.__s('Icon', 'webresources').'</td><td>';
         $out .= Html::input('webresources_icon', [
             'value'  => $ico
         ]);
-        $out .= '</td><td>'.__('Icon color', 'webresources').'</td><td>';
+        $out .= '</td><td>'.__s('Icon color', 'webresources').'</td><td>';
         $out .= Html::showColorField('webresources_color', [
             'value'  => $color,
             'display'   => false
@@ -202,7 +289,7 @@ function plugin_webresources_preupdateitem(CommonDBTM $item)
             'itemtype'  => $item::getType(),
             'items_id'  => $item->getID(),
             'icon'      => $item->input['webresources_icon'],
-            'color'     => $item->input['webresources_color']
+            'color'     => $item->input['webresources_color'] ?? '#000000'
         ], [
             'itemtype'  => $item::getType(),
             'items_id'  => $item->getID(),

@@ -21,24 +21,20 @@
  --------------------------------------------------------------------------
  */
 
+use Glpi\Application\View\TemplateRenderer;
 use Glpi\Event;
 
 class PluginWebresourcesResource extends CommonDBVisible implements ExtraVisibilityCriteria {
 
    const WEBRESOURCEADMIN = 1024;
 
-   public static $rightname = 'plugin_webresources_resource';
+   public static string $rightname = 'plugin_webresources_resource';
 
-   // For visibility checks
-   protected $users     = [];
-   protected $groups    = [];
-   protected $profiles  = [];
-   protected $entities  = [];
 
 
    public static function getTypeName($nb = 0)
    {
-      return _n('Web Resource', 'Web Resources', 'webresources');
+      return _n('Web Resource', 'Web Resources', (int) $nb, 'webresources');
    }
 
    public static function getIcon()
@@ -46,7 +42,7 @@ class PluginWebresourcesResource extends CommonDBVisible implements ExtraVisibil
       return 'fab fa-chrome';
    }
 
-   static function getAdditionalMenuLinks() {
+   public static function getAdditionalMenuLinks() {
 
       $links = [];
       if (static::canView()) {
@@ -58,7 +54,7 @@ class PluginWebresourcesResource extends CommonDBVisible implements ExtraVisibil
       return false;
    }
 
-   function post_getFromDB() {
+   public function post_getFromDB() {
 
       // Users
       $this->users    = PluginWebresourcesResource_User::getUsers($this->fields['id']);
@@ -73,7 +69,18 @@ class PluginWebresourcesResource extends CommonDBVisible implements ExtraVisibil
       $this->profiles = PluginWebresourcesResource_Profile::getProfiles($this->fields['id']);
    }
 
-   function defineTabs($options = []) {
+   public function cleanDBonPurge()
+   {
+      // Remove the targets of the purged resource
+      $this->deleteChildrenAndRelationsFromDb([
+         PluginWebresourcesResource_User::class,
+         PluginWebresourcesResource_Group::class,
+         PluginWebresourcesResource_Profile::class,
+         PluginWebresourcesResource_Entity::class,
+      ]);
+   }
+
+   public function defineTabs($options = []) {
 
       $ong = [];
       $this->addStandardTab(__CLASS__, $ong, $options);
@@ -82,7 +89,7 @@ class PluginWebresourcesResource extends CommonDBVisible implements ExtraVisibil
    }
 
 
-   function getTabNameForItem(CommonGLPI $item, $withtemplate = 0) {
+   public function getTabNameForItem(CommonGLPI $item, $withtemplate = 0) {
 
       if (!$withtemplate) {
          $nb = 0;
@@ -96,7 +103,7 @@ class PluginWebresourcesResource extends CommonDBVisible implements ExtraVisibil
       return '';
    }
 
-   static function displayTabContentForItem(CommonGLPI $item, $tabnum = 1, $withtemplate = 0) {
+   public static function displayTabContentForItem(CommonGLPI $item, $tabnum = 1, $withtemplate = 0) {
 
       if ($item->getType() === __CLASS__) {
          switch ($tabnum) {
@@ -114,185 +121,106 @@ class PluginWebresourcesResource extends CommonDBVisible implements ExtraVisibil
 
    public function showVisibility(): bool
    {
-      global $CFG_GLPI;
-
-      $ID      = $this->fields['id'];
+      $ID      = (int) $this->fields['id'];
       $canedit = $this->canEdit($ID);
       $rand    = mt_rand();
-      $nb      = $this->countVisibilities();
-      $str_type = strtolower($this::getType());
-      $fk = static::getForeignKeyField();
 
       if ($canedit) {
-         echo "<div class='firstbloc'>";
-         echo "<form name='{$str_type}visibility_form$rand' id='{$str_type}visibility_form$rand' ";
-         echo " method='post' action='".static::getFormURL()."'>";
-         echo "<input type='hidden' name='{$fk}' value='$ID'>";
-         echo "<table class='tab_cadre_fixe'>";
-         echo "<tr class='tab_bg_1'><th colspan='4'>".__('Add a target')."</tr>";
-         echo "<tr class='tab_bg_1'><td class='tab_bg_2' width='100px'>";
-
-         $types   = ['Entity', 'Group', 'Profile', 'User'];
-
-         $addrand = Dropdown::showItemTypes('_type', $types);
-         $params = $this->getShowVisibilityDropdownParams();
-
-         Ajax::updateItemOnSelectEvent("dropdown__type".$addrand, "visibility$rand",
-            $CFG_GLPI["root_doc"]."/ajax/visibility.php", $params);
-
-         echo "</td>";
-         echo "<td><span id='visibility$rand'></span>";
-         echo "</td></tr>";
-         echo "</table>";
-         Html::closeForm();
-         echo "</div>";
+         TemplateRenderer::getInstance()->display('components/add_visibility_target.html.twig', [
+            'type' => static::class,
+            'rand' => $rand,
+            'id'   => $ID,
+            'add_target_msg' => __('Add a target'),
+            'visiblity_dropdown_params' => $this->getShowVisibilityDropdownParams(),
+         ]);
       }
-      echo "<div class='spaced'>";
-      if ($canedit && $nb) {
-         Html::openMassiveActionsForm('mass'.__CLASS__.$rand);
-         $massiveactionparams = ['num_displayed'
-         => min($_SESSION['glpilist_limit'], $nb),
-            'container'
-            => 'mass'.__CLASS__.$rand,
-            'specific_actions'
-            => ['delete' => _x('button', 'Delete permanently')]];
 
-         if ($this->fields['users_id'] != Session::getLoginUserID()) {
-            $massiveactionparams['confirm']
-               = __('Caution! You are not the author of this element. Delete targets can result in loss of access to that element.');
-         }
-         Html::showMassiveActions($massiveactionparams);
-      }
-      echo "<table class='tab_cadre_fixehov'>";
-      $header_begin  = "<tr>";
-      $header_top    = '';
-      $header_bottom = '';
-      $header_end    = '';
-      if ($canedit && $nb) {
-         $header_begin  .= "<th width='10'>";
-         $header_top    .= Html::getCheckAllAsCheckbox('mass'.__CLASS__.$rand);
-         $header_bottom .= Html::getCheckAllAsCheckbox('mass'.__CLASS__.$rand);
-         $header_end    .= "</th>";
-      }
-      $header_end .= "<th>".__('Type')."</th>";
-      $header_end .= "<th>"._n('Recipient', 'Recipients', Session::getPluralNumber())."</th>";
-      $header_end .= "</tr>";
-      echo $header_begin.$header_top.$header_end;
-
-      // Users
-      if (count($this->users)) {
-         foreach ($this->users as $val) {
-            foreach ($val as $data) {
-               echo "<tr class='tab_bg_1'>";
-               if ($canedit) {
-                  echo "<td>";
-                  Html::showMassiveActionCheckBox(PluginWebresourcesResource_User::class, $data["id"]);
-                  echo "</td>";
-               }
-               echo "<td>".__('User')."</td>";
-               echo "<td>".getUserName($data['users_id'])."</td>";
-               echo "</tr>";
+      $recursive_flag = "<span class='fw-bold'>(" . __s('R') . ")</span>";
+      $with_entity = static function (string $recipient, array $data) use ($recursive_flag): string {
+         if ($data['entities_id'] !== null && !$data['no_entity_restriction']) {
+            $recipient = sprintf(
+               __s('%1$s / %2$s'),
+               $recipient,
+               htmlescape(Dropdown::getDropdownName('glpi_entities', $data['entities_id']))
+            );
+            if ($data['is_recursive']) {
+               $recipient = sprintf(__s('%1$s %2$s'), $recipient, $recursive_flag);
             }
          }
+         return $recipient;
+      };
+
+      $entries = [];
+      foreach ($this->users as $val) {
+         foreach ($val as $data) {
+            $entries[] = [
+               'itemtype'  => PluginWebresourcesResource_User::class,
+               'id'        => $data['id'],
+               'type'      => User::getTypeName(1),
+               'recipient' => htmlescape(getUserName($data['users_id'])),
+            ];
+         }
       }
-
-      // Groups
-      if (count($this->groups)) {
-         foreach ($this->groups as $val) {
-            foreach ($val as $data) {
-               echo "<tr class='tab_bg_1'>";
-               if ($canedit) {
-                  echo "<td>";
-                  Html::showMassiveActionCheckBox(PluginWebresourcesResource_Group::class, $data["id"]);
-                  echo "</td>";
-               }
-               echo "<td>".__('Group')."</td>";
-
-               $names   = Dropdown::getDropdownName('glpi_groups', $data['groups_id'], 1);
-               $entname = sprintf(__('%1$s %2$s'), $names["name"],
-                  Html::showToolTip($names["comment"], ['display' => false]));
-               if ($data['entities_id'] >= 0) {
-                  $entname = sprintf(__('%1$s / %2$s'), $entname,
-                     Dropdown::getDropdownName('glpi_entities',
-                        $data['entities_id']));
-                  if ($data['is_recursive']) {
-                     //TRANS: R for Recursive
-                     $entname = sprintf(__('%1$s %2$s'),
-                        $entname, "<span class='b'>(".__('R').")</span>");
-                  }
-               }
-               echo "<td>".$entname."</td>";
-               echo "</tr>";
+      foreach ($this->groups as $val) {
+         foreach ($val as $data) {
+            $entries[] = [
+               'itemtype'  => PluginWebresourcesResource_Group::class,
+               'id'        => $data['id'],
+               'type'      => Group::getTypeName(1),
+               'recipient' => $with_entity(htmlescape(Dropdown::getDropdownName('glpi_groups', $data['groups_id'])), $data),
+            ];
+         }
+      }
+      foreach ($this->entities as $val) {
+         foreach ($val as $data) {
+            $recipient = htmlescape(Dropdown::getDropdownName('glpi_entities', $data['entities_id']));
+            if ($data['is_recursive']) {
+               $recipient = sprintf(__s('%1$s %2$s'), $recipient, $recursive_flag);
             }
+            $entries[] = [
+               'itemtype'  => PluginWebresourcesResource_Entity::class,
+               'id'        => $data['id'],
+               'type'      => Entity::getTypeName(1),
+               'recipient' => $recipient,
+            ];
+         }
+      }
+      foreach ($this->profiles as $val) {
+         foreach ($val as $data) {
+            $entries[] = [
+               'itemtype'  => PluginWebresourcesResource_Profile::class,
+               'id'        => $data['id'],
+               'type'      => Profile::getTypeName(1),
+               'recipient' => $with_entity(htmlescape(Dropdown::getDropdownName('glpi_profiles', $data['profiles_id'])), $data),
+            ];
          }
       }
 
-      // Entity
-      if (count($this->entities)) {
-         foreach ($this->entities as $val) {
-            foreach ($val as $data) {
-               echo "<tr class='tab_bg_1'>";
-               if ($canedit) {
-                  echo "<td>";
-                  Html::showMassiveActionCheckBox(PluginWebresourcesResource_Entity::class, $data["id"]);
-                  echo "</td>";
-               }
-               echo "<td>".__('Entity')."</td>";
-               $names   = Dropdown::getDropdownName('glpi_entities', $data['entities_id'], 1);
-               $tooltip = Html::showToolTip($names["comment"], ['display' => false]);
-               $entname = sprintf(__('%1$s %2$s'), $names["name"], $tooltip);
-               if ($data['is_recursive']) {
-                  $entname = sprintf(__('%1$s %2$s'), $entname,
-                     "<span class='b'>(".__('R').")</span>");
-               }
-               echo "<td>".$entname."</td>";
-               echo "</tr>";
-            }
-         }
+      $massiveactionparams = [
+         'num_displayed'    => count($entries),
+         'container'        => 'mass' . static::class . $rand,
+         'specific_actions' => ['delete' => _x('button', 'Delete permanently')],
+      ];
+      if ((int) $this->fields['users_id'] !== (int) Session::getLoginUserID()) {
+         $massiveactionparams['confirm'] = __('Caution! You are not the author of this item. Deleting targets can result in loss of access.');
       }
 
-      // Profiles
-      if (count($this->profiles)) {
-         foreach ($this->profiles as $val) {
-            foreach ($val as $data) {
-               echo "<tr class='tab_bg_1'>";
-               if ($canedit) {
-                  echo "<td>";
-                  Html::showMassiveActionCheckBox(PluginWebresourcesResource_Profile::class, $data["id"]);
-                  echo "</td>";
-               }
-               echo "<td>"._n('Profile', 'Profiles', 1)."</td>";
-
-               $names   = Dropdown::getDropdownName('glpi_profiles', $data['profiles_id'], 1);
-               $tooltip = Html::showToolTip($names["comment"], ['display' => false]);
-               $entname = sprintf(__('%1$s %2$s'), $names["name"], $tooltip);
-               if ($data['entities_id'] >= 0) {
-                  $entname = sprintf(__('%1$s / %2$s'), $entname,
-                     Dropdown::getDropdownName('glpi_entities',
-                        $data['entities_id']));
-                  if ($data['is_recursive']) {
-                     $entname = sprintf(__('%1$s %2$s'), $entname,
-                        "<span class='b'>(".__('R').")</span>");
-                  }
-               }
-               echo "<td>".$entname."</td>";
-               echo "</tr>";
-            }
-         }
-      }
-
-      if ($nb) {
-         echo $header_begin.$header_bottom.$header_end;
-      }
-      echo "</table>";
-      if ($canedit && $nb) {
-         $massiveactionparams['ontop'] = false;
-         Html::showMassiveActions($massiveactionparams);
-         Html::closeForm();
-      }
-
-      echo "</div>";
-      // Add items
+      TemplateRenderer::getInstance()->display('components/datatable.html.twig', [
+         'is_tab'    => true,
+         'nofilter'  => true,
+         'nosort'    => true,
+         'columns'   => [
+            'type'      => _n('Type', 'Types', 1),
+            'recipient' => _n('Recipient', 'Recipients', 1),
+         ],
+         'formatters' => [
+            'recipient' => 'raw_html',
+         ],
+         'entries'             => $entries,
+         'total_number'        => count($entries),
+         'showmassiveactions'  => $canedit,
+         'massiveactionparams' => $massiveactionparams,
+      ]);
 
       return true;
    }
@@ -366,7 +294,7 @@ class PluginWebresourcesResource extends CommonDBVisible implements ExtraVisibil
                   ? $_SESSION["glpigroups"]
                   : [-1],
                'OR' => [
-                     "{$res_group_table}.entities_id" => ['<', '0'],
+                     "{$res_group_table}.no_entity_restriction" => 1,
                   ] + $restrict
             ];
          }
@@ -378,9 +306,8 @@ class PluginWebresourcesResource extends CommonDBVisible implements ExtraVisibil
             $where['OR'][] = [
                "{$res_profile_table}.profiles_id" => $_SESSION["glpiactiveprofile"]['id'],
                'OR' => [
-                  "{$res_profile_table}.entities_id" => ['<', '0'],
-                  getEntitiesRestrictCriteria($res_profile_table, '', '', true, true)
-               ]
+                     "{$res_profile_table}.no_entity_restriction" => 1,
+                  ] + getEntitiesRestrictCriteria($res_profile_table, '', '', true, true)
             ];
          }
       }
@@ -405,36 +332,40 @@ class PluginWebresourcesResource extends CommonDBVisible implements ExtraVisibil
       return $criteria;
    }
 
-   function showForm($ID, $options = []) {
+   public function showForm($ID, array $options = []) {
       global $CFG_GLPI;
 
       $this->initForm($ID, $options);
       $this->showFormHeader($options + ['formoptions' => 'class="webresources-form"']);
 
-      $canedit = $this->can($ID, UPDATE);
+      $name  = (string) ($this->fields['name'] ?? '');
+      $icon  = (string) ($this->fields['icon'] ?? '');
+      $color = (string) ($this->fields['color'] ?? '#000000');
+      if ($color === '') {
+         $color = '#000000';
+      }
 
       echo "<tr class='tab_bg_1'>";
-      echo "<td>".__('Name')."</td>";
+      echo "<td>".__s('Name')."</td>";
       echo "<td>";
-      $users_id = (isset($this->fields['users_id']) && !empty($this->fields['users_id'])) ? $this->fields['users_id'] : $_SESSION['glpiID'];
+      $users_id = !empty($this->fields['users_id']) ? $this->fields['users_id'] : Session::getLoginUserID();
       echo Html::hidden('users_id', ['value' => $users_id]);
-      echo Html::input('name', ['value' => $this->fields['name']]);
-      echo "</td><td>".__('Link', 'webresources')."</td><td>";
+      echo Html::input('name', ['value' => $name]);
+      echo "</td><td>".__s('Link', 'webresources')."</td><td>";
       echo Html::input('link', [
          'value'  => $this->fields['link'] ?? ''
       ]);
       echo "</td></tr>";
 
       echo "<tr class='tab_bg_1'>";
-      echo "<td>".__('Icon', 'webresources')."</td><td>";
+      echo "<td>".__s('Icon', 'webresources')."</td><td>";
       echo Html::input('icon', [
-         'value'  => $this->fields['icon'] ?? ''
+         'value'  => $icon
       ]);
       echo '&nbsp;';
-      Html::showToolTip(__('Leave blank to automatically use a favicon', 'webresources'));
+      Html::showToolTip(__s('Leave blank to automatically use a favicon', 'webresources'));
       echo "</td>";
-
-      echo "<td>".PluginWebresourcesCategory::getTypeName(1)."</td>";
+      echo "<td>".htmlescape(PluginWebresourcesCategory::getTypeName(1))."</td>";
       echo "<td>";
       Dropdown::show(PluginWebresourcesCategory::class, [
          'value'  => $this->fields['plugin_webresources_categories_id'] ?? 0
@@ -442,35 +373,35 @@ class PluginWebresourcesResource extends CommonDBVisible implements ExtraVisibil
       echo "</td></tr>";
 
       echo "<tr class='tab_bg_1'>";
-      echo "<td>".__('Icon Color', 'webresources')."</td><td>";
+      echo "<td>".__s('Icon Color', 'webresources')."</td><td>";
       Html::showColorField('color', [
-         'value'  => $this->fields['color'] ?? '#000000'
+         'value'  => $color
       ]);
       echo '&nbsp;';
-      Html::showToolTip(__('Only applies to FontAwesome icons and not images', 'webresources'));
+      Html::showToolTip(__s('Only applies to FontAwesome icons and not images', 'webresources'));
       echo "</td>";
-
       echo "<td></td><td></td></tr>";
 
       // Preview
-      echo '<tr><th colspan="4">'.__('Preview', 'webresources').'</th></tr>';
+      echo '<tr><th colspan="4">'.__s('Preview', 'webresources').'</th></tr>';
       echo '<tr class="webresources-categories"><td colspan="4" class="webresources-category">';
       echo '<div id="refresh-preview" style="display: none">';
-      echo '<button><i class="fas fa-sync"></i></button>';
-      echo '<span class="very_small_space">'.__('Refresh icon image', 'webresources').'</span></div>';
-      echo '<div class="webresources-item">';
+      echo '<button type="button" class="btn btn-sm btn-outline-secondary"><i class="ti ti-refresh"></i></button>';
+      echo '<span class="ms-2">'.__s('Refresh icon image', 'webresources').'</span></div>';
+      echo '<div class="webresources-preview" data-view-mode="grid"><div class="webresources-item">';
       echo '<div class="webresources-item-icon">';
-      $icon_type = PluginWebresourcesToolbox::isValidWebUrl($this->fields['icon']) ? 'image' : 'icon';
-      echo '<img style="display:'.($icon_type === 'image' ? 'block' : 'none').'" src="' . $this->fields['icon'] . '" title="' . $this->fields['name'] . '" alt="' . $this->fields['name'] . '"/>';
-      if (empty($this->fields['icon'])) {
-         $this->fields['icon'] = 'fab fa-chrome';
-      }
-      echo '<i style="color: '.$this->fields['color'].';display:'.($icon_type === 'icon' ? 'block' : 'none').'" class="' . $this->fields['icon'] . '" title="' . $this->fields['name'] . '" alt="' . $this->fields['name'] . '"></i>';
+      $icon_type = PluginWebresourcesToolbox::isValidWebUrl($icon) ? 'image' : 'icon';
+      echo '<img style="display:'.($icon_type === 'image' ? 'block' : 'none').'" src="' . htmlescape($icon_type === 'image' ? $icon : '') . '" title="' . htmlescape($name) . '" alt="' . htmlescape($name) . '"/>';
+      $icon_class = ($icon_type === 'image' || $icon === '') ? self::getIcon() : $icon;
+      echo '<i style="color: '.htmlescape($color).';display:'.($icon_type === 'icon' ? 'block' : 'none').'" class="' . htmlescape($icon_class) . '" title="' . htmlescape($name) . '"></i>';
       echo '</div>';
-      echo '<div class="webresources-item-title">'.$this->fields['name'].'</div>';
-      echo '</div></td></tr>';
+      echo '<div class="webresources-item-title">'.htmlescape($name).'</div>';
+      echo '</div></div></td></tr>';
 
       $this->showFormButtons($options);
+
+      $scraper_url = jsescape($CFG_GLPI['root_doc'] . '/plugins/webresources/ajax/scraper.php');
+      $default_icon = jsescape(self::getIcon());
 
       $script = <<<JS
 $(document).ready(function() {
@@ -484,7 +415,7 @@ $(document).ready(function() {
       $.ajax({
          method: 'GET',
          async: false,
-         url: ("/plugins/webresources/ajax/scraper.php"),
+         url: "{$scraper_url}",
          data: {
             url: url
          },
@@ -514,7 +445,7 @@ $(document).ready(function() {
    form.on('input', 'input[name="icon"]', function() {
       let icon_val = $('input[name="icon"]').val();
       if (icon_val === "") {
-         icon_val = 'fab fa-chrome';
+         icon_val = "{$default_icon}";
       }
       const is_url = isWebURL(icon_val);
       if (is_url) {
@@ -566,9 +497,9 @@ JS;
       if (Session::getCurrentInterface() === 'central') {
          if (self::canUpdate()) {
             $actions[__CLASS__.MassiveAction::CLASS_ACTION_SEPARATOR.'add_target']
-               = __('Add target');
+               = __('Add target', 'webresources');
             $actions[__CLASS__.MassiveAction::CLASS_ACTION_SEPARATOR.'remove_target']
-               = __('Remove target');
+               = __('Remove target', 'webresources');
          }
       }
 
@@ -642,6 +573,11 @@ JS;
                   }
 
                   if (!is_null($rel_item)) {
+                     if (array_key_exists('entities_id', $input) && (int) $input['entities_id'] === -1) {
+                        // "No restriction" value selected
+                        $input['entities_id'] = 'NULL';
+                        $input['no_entity_restriction'] = 1;
+                     }
                      $rel_item->add($input);
                      Event::log($input["plugin_webresources_resources_id"], __CLASS__, 4, "plugin",
                         sprintf(__('%s adds a target'), $_SESSION["glpiname"]));
@@ -670,7 +606,14 @@ JS;
 
                   /** @var CommonDBTM $rel_itemtype */
                   if (!is_null($rel_itemtype)) {
-                     unset($input['_type'], $input['addvisibility'], $input['_glpi_csrf_token']);
+                     $input = array_intersect_key($input, array_flip([
+                        'plugin_webresources_resources_id', 'users_id', 'groups_id', 'profiles_id', 'entities_id', 'is_recursive',
+                     ]));
+                     if (array_key_exists('entities_id', $input) && (int) $input['entities_id'] === -1) {
+                        // "No restriction" value selected
+                        unset($input['entities_id'], $input['is_recursive']);
+                        $input['no_entity_restriction'] = 1;
+                     }
                      $DB->delete($rel_itemtype::getTable(), $input);
                      Event::log($input["plugin_webresources_resources_id"], __CLASS__, 4, "plugin",
                         sprintf(__('%s deletes a target'), $_SESSION["glpiname"]));

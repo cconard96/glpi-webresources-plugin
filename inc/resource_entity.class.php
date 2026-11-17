@@ -24,13 +24,13 @@
 class PluginWebresourcesResource_Entity extends CommonDBRelation {
 
    // From CommonDBRelation
-   static public $itemtype_1          = 'PluginWebresourcesResource';
-   static public $items_id_1          = 'plugin_webresources_resources_id';
-   static public $itemtype_2          = 'Entity';
-   static public $items_id_2          = 'entities_id';
+   public static ?string $itemtype_1          = 'PluginWebresourcesResource';
+   public static ?string $items_id_1          = 'plugin_webresources_resources_id';
+   public static ?string $itemtype_2          = 'Entity';
+   public static ?string $items_id_2          = 'entities_id';
 
-   //static public $checkItem_2_Rights  = self::DONT_CHECK_ITEM_RIGHTS;
-   static public $logs_for_item_2     = false;
+   //public static int $checkItem_2_Rights  = self::DONT_CHECK_ITEM_RIGHTS;
+   public static bool $logs_for_item_2     = false;
 
 
    /**
@@ -40,7 +40,7 @@ class PluginWebresourcesResource_Entity extends CommonDBRelation {
     *
     * @return array Array of entities linked to a web resource
     **/
-   static function getEntities($plugin_webresources_resources_id) {
+   public static function getEntities($plugin_webresources_resources_id) {
       global $DB;
 
       $entities  = [];

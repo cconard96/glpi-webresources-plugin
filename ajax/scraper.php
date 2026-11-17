@@ -23,8 +23,6 @@
 
 use Glpi\Exception\Http\NotFoundHttpException;
 
-include ('../../../inc/includes.php');
-
 $plugin = new Plugin();
 if (!$plugin->isActivated('webresources')) {
     throw new NotFoundHttpException();
@@ -34,9 +32,15 @@ Html::header_nocache();
 
 Session::checkLoginUser();
 
-if (!isset($_REQUEST['url'])) {
-   throw new RuntimeException('Required argument missing!');
+// The scraper makes the GLPI server fetch the given URL: only users allowed to manage web resources may use it.
+if (!PluginWebresourcesResource::canCreate() && !PluginWebresourcesResource::canUpdate()) {
+   throw new \Glpi\Exception\Http\AccessDeniedHttpException();
 }
 
-header('Content-Type: application/json; charset=UTF-8"');
-echo json_encode(PluginWebresourcesScraper::get($_REQUEST['url']));
+$url = $_REQUEST['url'] ?? null;
+if (!is_string($url) || !PluginWebresourcesToolbox::isValidWebUrl($url)) {
+   throw new \Glpi\Exception\Http\BadRequestHttpException('Required argument missing!');
+}
+
+header('Content-Type: application/json; charset=UTF-8');
+echo json_encode(PluginWebresourcesScraper::get($url));

@@ -23,11 +23,9 @@
 
 use Glpi\Event;
 
-include ('../../../inc/includes.php');
-
 $plugin = new Plugin();
 if (!$plugin->isActivated('webresources')) {
-   Html::displayNotFoundError();
+   throw new \Glpi\Exception\Http\NotFoundHttpException();
 }
 
 if (empty($_GET["id"])) {
@@ -41,14 +39,15 @@ if (isset($_POST["add"])) {
    $resource->check(-1, CREATE, $_POST);
 
    $newID = $resource->add($_POST);
-   Event::log($newID, PluginWebresourcesResource::class, 4, "plugin",
-      //TRANS: %1$s is the user login, %2$s is the name of the item
-      sprintf(__('%1$s adds the item %2$s'), $_SESSION["glpiname"], $_POST["name"]));
-   if ($_SESSION['glpibackcreated']) {
-      Html::redirect($resource->getLinkURL());
-   } else {
-      Html::back();
+   if ($newID) {
+      Event::log($newID, PluginWebresourcesResource::class, 4, "plugin",
+         //TRANS: %1$s is the user login, %2$s is the name of the item
+         sprintf(__('%1$s adds the item %2$s'), $_SESSION["glpiname"], $_POST["name"] ?? ''));
+      if ($_SESSION['glpibackcreated']) {
+         Html::redirect($resource->getLinkURL());
+      }
    }
+   Html::back();
 
 } else if (isset($_POST["purge"])) {
    $resource->check($_POST["id"], PURGE);
@@ -72,6 +71,12 @@ if (isset($_POST["add"])) {
 } else if (isset($_POST["addvisibility"])) {
    if (isset($_POST["_type"]) && !empty($_POST["_type"])
       && isset($_POST['plugin_webresources_resources_id']) && $_POST["plugin_webresources_resources_id"]) {
+      if (array_key_exists('entities_id', $_POST) && (int) $_POST['entities_id'] === -1) {
+         // "No restriction" value selected
+         $_POST['entities_id'] = 'NULL';
+         $_POST['no_entity_restriction'] = 1;
+      }
+      $resource->check((int) $_POST['plugin_webresources_resources_id'], UPDATE);
       $item = null;
       switch ($_POST["_type"]) {
          case 'User' :
@@ -93,7 +98,9 @@ if (isset($_POST["add"])) {
             break;
 
          case 'Entity' :
-            $item = new PluginWebresourcesResource_Entity();
+            if (isset($_POST['entities_id']) && $_POST['entities_id'] !== 'NULL') {
+               $item = new PluginWebresourcesResource_Entity();
+            }
             break;
       }
       if (!is_null($item)) {

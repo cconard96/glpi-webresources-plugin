@@ -1,217 +1,87 @@
-# French translations for fix package.
-# Copyright (C) 2021 THE fix'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the fix package.
-# Automatically generated, 2021.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: fix 95\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-08-15 17:40-0400\n"
-"PO-Revision-Date: 2020-08-15 17:40-0400\n"
-"Last-Translator: Automatically generated\n"
-"Language-Team: none\n"
-"Language: fr\n"
+"Project-Id-Version: webresources 3.0.0-glpi12\n"
+"Language: fr_FR\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=ASCII\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#. TRANS: %1$s is the user login, %2$s is the name of the item
-#: front/resource.form.php:41
-#, php-format
-msgid "%1$s adds the item %2$s"
-msgstr ""
+msgid "Web Resources"
+msgstr "Ressources web"
 
-#. TRANS: %s is the user login
-#: front/resource.form.php:54
-#, php-format
-msgid "%s purges an item"
-msgstr ""
+msgid "Favicon Settings"
+msgstr "Paramètres des favicons"
 
-#. TRANS: %s is the user login
-#: front/resource.form.php:63
-#, php-format
-msgid "%s updates an item"
-msgstr ""
+msgid "General Settings"
+msgstr "Paramètres généraux"
 
-#. TRANS: %s is the user login
-#: front/resource.form.php:98 inc/resource.class.php:650
-#, php-format
-msgid "%s adds a target"
-msgstr ""
+msgid "Plugin Menu"
+msgstr "Menu du plugin"
 
-#: inc/iconwarmupcommand.class.php:41
+msgid "Use DuckDuckGo Favicon Service"
+msgstr "Utiliser le service de favicons DuckDuckGo"
+
+msgid "Use Google Favicon Service"
+msgstr "Utiliser le service de favicons Google"
+
+msgid "Link"
+msgstr "Lien"
+
+msgid "Icon"
+msgstr "Icône"
+
+msgid "Icon Color"
+msgstr "Couleur de l'icône"
+
+msgid "Icon color"
+msgstr "Couleur de l'icône"
+
+msgid "Leave blank to automatically use a favicon"
+msgstr "Laisser vide pour utiliser automatiquement le favicon du site"
+
+msgid "Only applies to FontAwesome icons and not images"
+msgstr ""
+"S'applique uniquement aux icônes (FontAwesome, Tabler), pas aux images"
+
+msgid "Preview"
+msgstr "Aperçu"
+
+msgid "Refresh icon image"
+msgstr "Actualiser l'image de l'icône"
+
+msgid "Add target"
+msgstr "Ajouter une cible"
+
+msgid "Remove target"
+msgstr "Retirer une cible"
+
+msgid "My resources"
+msgstr "Mes ressources"
+
+msgid "Uncategorized"
+msgstr "Sans catégorie"
+
+msgid "List view"
+msgstr "Vue liste"
+
+msgid "Grid view"
+msgstr "Vue grille"
+
 msgid ""
 "Warmup the automatically generated icon cache. This is used for dynamic "
 "dashboards such as suppliers, appliances, and entities."
 msgstr ""
+"Préchauffe le cache des icônes générées automatiquement. Utilisé pour les "
+"tableaux dynamiques (fournisseurs, applicatifs, entités)."
 
-#: inc/config.class.php:35 inc/profile.class.php:31 inc/profile.class.php:65
-#: setup.php:49
-msgid "Web Resources"
-msgstr ""
-
-#: inc/config.class.php:50
-msgid "Favicon Settings"
-msgstr ""
-
-#: inc/config.class.php:51
-msgid "Use DuckDuckGo Favicon Service"
-msgstr ""
-
-#: inc/config.class.php:56
-msgid "Use Google Favicon Service"
-msgstr ""
-
-#: inc/config.class.php:63 inc/profile.class.php:71
-msgctxt "button"
-msgid "Save"
-msgstr ""
-
-#: inc/resource.class.php:41
 msgid "Web Resource"
 msgid_plural "Web Resources"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Ressource web"
+msgstr[1] "Ressources web"
 
-#: inc/resource.class.php:92
-msgid "Target"
-msgid_plural "Targets"
-msgstr[0] ""
-msgstr[1] ""
-
-#: inc/resource.class.php:131
-msgid "Add a target"
-msgstr ""
-
-#: inc/resource.class.php:157
-msgctxt "button"
-msgid "Delete permanently"
-msgstr ""
-
-#: inc/resource.class.php:161
-msgid ""
-"Caution! You are not the author of this element. Delete targets can result "
-"in loss of access to that element."
-msgstr ""
-
-#: inc/resource.class.php:176
-msgid "Type"
-msgstr ""
-
-#: inc/resource.class.php:177
-msgid "Recipient"
-msgid_plural "Recipients"
-msgstr[0] ""
-msgstr[1] ""
-
-#: inc/resource.class.php:191
-msgid "User"
-msgstr ""
-
-#: inc/resource.class.php:208
-msgid "Group"
-msgstr ""
-
-#. TRANS: R for Recursive
-#: inc/resource.class.php:211 inc/resource.class.php:219
-#: inc/resource.class.php:242 inc/resource.class.php:244
-#: inc/resource.class.php:267 inc/resource.class.php:273
-#, php-format
-msgid "%1$s %2$s"
-msgstr ""
-
-#: inc/resource.class.php:214 inc/resource.class.php:269
-#, php-format
-msgid "%1$s / %2$s"
-msgstr ""
-
-#: inc/resource.class.php:220 inc/resource.class.php:245
-#: inc/resource.class.php:274
-msgid "R"
-msgstr ""
-
-#: inc/resource.class.php:239
-msgid "Entity"
-msgstr ""
-
-#: inc/resource.class.php:263
-msgid "Profile"
-msgid_plural "Profiles"
-msgstr[0] ""
-msgstr[1] ""
-
-#: inc/resource.class.php:416
-msgid "Name"
-msgstr ""
-
-#: inc/resource.class.php:418
-msgid "Link"
-msgstr ""
-
-#: inc/resource.class.php:425 hook.php:168
-msgid "Icon"
-msgstr ""
-
-#: inc/resource.class.php:430
-msgid "Leave blank to automatically use a favicon"
-msgstr ""
-
-#: inc/resource.class.php:441
-msgid "Icon Color"
-msgstr ""
-
-#: inc/resource.class.php:446
-msgid "Only applies to FontAwesome icons and not images"
-msgstr ""
-
-#: inc/resource.class.php:452
-msgid "Preview"
-msgstr ""
-
-#: inc/resource.class.php:456
-msgid "Refresh icon image"
-msgstr ""
-
-#: inc/resource.class.php:567
-msgid "Add target"
-msgstr ""
-
-#: inc/resource.class.php:569
-msgid "Remove target"
-msgstr ""
-
-#: inc/resource.class.php:696
-#, php-format
-msgid "%s deletes a target"
-msgstr ""
-
-#: inc/dashboard.class.php:59
-msgid "My resources"
-msgstr ""
-
-#: inc/dashboard.class.php:101 inc/dashboard.class.php:155
-#: inc/dashboard.class.php:365
-msgid "Uncategorized"
-msgstr ""
-
-#: inc/dashboard.class.php:412
-msgid "Search"
-msgstr ""
-
-#: inc/iconbakecommand.class.php:41
-msgid ""
-"Bake the automatically generated icon cache to a json file. This is can be "
-"moved between GLPI instances or used to quickly warmup the cache."
-msgstr ""
-
-#: inc/category.class.php:30
 msgid "Category"
 msgid_plural "Categories"
-msgstr[0] ""
-msgstr[1] ""
-
-#: hook.php:172
-msgid "Icon color"
-msgstr ""
+msgstr[0] "Catégorie"
+msgstr[1] "Catégories"
