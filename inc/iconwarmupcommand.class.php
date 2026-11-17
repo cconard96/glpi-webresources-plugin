@@ -34,14 +34,14 @@ if (!defined('GLPI_ROOT')) {
  */
 final class PluginWebresourcesIconWarmupCommand extends AbstractCommand {
 
-   protected function configure() {
+   protected function configure(): void {
       parent::configure();
 
-      $this->setName('webresources:iconcache:warmup');
-      $this->setDescription(__('Warmup the automatically generated icon cache. This is used for dynamic dashboards such as suppliers, appliances, and entities.'));
+      $this->setName('plugins:webresources:iconcache_warmup');
+      $this->setDescription(__('Warmup the automatically generated icon cache. This is used for dynamic dashboards such as suppliers, appliances, and entities.', 'webresources'));
    }
 
-   protected function execute(InputInterface $input, OutputInterface $output) {
+   protected function execute(InputInterface $input, OutputInterface $output): int {
 
       $start = round(microtime(true) * 1000);
       $contexts = PluginWebresourcesDashboard::getDashboardContexts(true);

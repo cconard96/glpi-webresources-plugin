@@ -24,13 +24,13 @@
 class PluginWebresourcesResource_Group extends CommonDBRelation {
 
    // From CommonDBRelation
-   static public $itemtype_1          = 'PluginWebresourcesResource';
-   static public $items_id_1          = 'plugin_webresources_resources_id';
-   static public $itemtype_2          = 'Group';
-   static public $items_id_2          = 'groups_id';
+   public static ?string $itemtype_1          = 'PluginWebresourcesResource';
+   public static ?string $items_id_1          = 'plugin_webresources_resources_id';
+   public static ?string $itemtype_2          = 'Group';
+   public static ?string $items_id_2          = 'groups_id';
 
-   static public $checkItem_2_Rights  = self::DONT_CHECK_ITEM_RIGHTS;
-   static public $logs_for_item_2     = false;
+   public static int $checkItem_2_Rights  = self::DONT_CHECK_ITEM_RIGHTS;
+   public static bool $logs_for_item_2     = false;
 
 
    /**
@@ -40,7 +40,7 @@ class PluginWebresourcesResource_Group extends CommonDBRelation {
     *
     * @return array Array of groups linked to a web resource
     **/
-   static function getGroups($plugin_webresources_resources_id) {
+   public static function getGroups($plugin_webresources_resources_id) {
       global $DB;
 
       $groups  = [];

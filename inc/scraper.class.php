@@ -69,7 +69,7 @@ class PluginWebresourcesScraper
     * @param ?string $path
     * @return bool|string
     */
-   private static function baseUrl(string $url, string $path = null)
+   private static function baseUrl(string $url, ?string $path = null)
    {
       $return = '';
 

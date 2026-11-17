@@ -22,13 +22,12 @@
  */
 
 define('PLUGIN_WEBRESOURCES_VERSION', '3.0.0');
-define('PLUGIN_WEBRESOURCES_MIN_GLPI', '11.0.0');
-define('PLUGIN_WEBRESOURCES_MAX_GLPI', '11.1.0');
+define('PLUGIN_WEBRESOURCES_MIN_GLPI', '12.0.0');
+define('PLUGIN_WEBRESOURCES_MAX_GLPI', '12.0.99');
 
 function plugin_init_webresources()
 {
 	global $PLUGIN_HOOKS;
-	$PLUGIN_HOOKS['csrf_compliant']['webresources'] = true;
 
    $plugin = new Plugin();
    if ($plugin->isInstalled('webresources') && $plugin->isActivated('webresources')) {
@@ -55,7 +54,7 @@ function plugin_init_webresources()
            // Do not load CSS or JS in CLI mode
            $PLUGIN_HOOKS['add_css']['webresources'][] = 'css/webresources.scss';
            // If current URL contains 'front/central.php' or 'webresources/front/dashboard.php', include the dashboard.js script
-           if (strpos($_SERVER['REQUEST_URI'], 'front/central.php') !== false || strpos($_SERVER['REQUEST_URI'], 'webresources/front/dashboard.php') !== false) {
+           if (str_contains($_SERVER['REQUEST_URI'] ?? '', 'front/central.php') || str_contains($_SERVER['REQUEST_URI'] ?? '', 'webresources/front/dashboard.php')) {
                $PLUGIN_HOOKS['add_javascript']['webresources'][] = 'js/dashboard.js';
            }
        }

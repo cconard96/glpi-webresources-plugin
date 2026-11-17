@@ -32,7 +32,7 @@ window.GlpiPluginWebResources = {
    },
    refreshDashboard: (context, view_mode) => {
       const dashboard = $('.webresources-dashboard');
-      const view_switcher = $('.webresources-view-switcher');
+      const view_switcher = $('.webresources-view-mode');
       // if context is not defined, replace context and view_mode with the ones from getDashboardState()
       if (typeof context === 'undefined') {
          const state = GlpiPluginWebResources.getDashboardState();
@@ -50,7 +50,7 @@ window.GlpiPluginWebResources = {
             context: context,
             view_mode: view_mode
          }
-      }).success(function(data) {
+      }).done(function(data) {
          $("#webresources-content").empty();
          $("#webresources-content").append(data);
 
@@ -64,10 +64,10 @@ window.GlpiPluginWebResources = {
          // Update view mode toggle button icon
          if (view_mode === 'grid') {
             view_switcher.find('i').attr('class', 'fas fa-list view-switcher');
-            view_switcher.find('i').attr('title', 'List view');
+            view_switcher.find('i').attr('title', view_switcher.data('title-list') || 'List view');
          } else {
             view_switcher.find('i').attr('class', 'fas fa-th view-switcher');
-            view_switcher.find('i').attr('title', 'Grid view');
+            view_switcher.find('i').attr('title', view_switcher.data('title-grid') || 'Grid view');
          }
          window.GlpiPluginWebResources.manageUrl(context, view_mode);
          window.GlpiPluginWebResources.applySearchFilters($('.webresources-toolbar input[name="search"]').get(0));

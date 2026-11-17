@@ -27,7 +27,7 @@
 class PluginWebresourcesConfig extends CommonDBTM
 {
 
-   static protected $notable = true;
+   protected static bool $notable = true;
 
    public function getTabNameForItem(CommonGLPI $item, $withtemplate = 0)
    {
@@ -37,19 +37,19 @@ class PluginWebresourcesConfig extends CommonDBTM
       return '';
    }
 
-   public function showForm($ID, array $options = []): bool
+   public function showForm($ID, array $options = [])
    {
       if (!Session::haveRight('config', UPDATE)) {
          return false;
       }
       $config = self::getConfig();
 
-      echo "<form name='form' action=\"".Toolbox::getItemTypeFormURL('Config')."\" method='post'>";
+      echo "<form name='form' action=\"".htmlescape(Toolbox::getItemTypeFormURL('Config'))."\" method='post'>";
       echo "<div class='center' id='tabsbody'>";
 
       echo "<table class='tab_cadre_fixe'><thead>";
-      echo "<th colspan='4'>" . __('General Settings', 'webresources') . '</th></thead>';
-      echo '<td>' . __('Plugin Menu', 'webresources') . '</td>';
+      echo "<th colspan='4'>" . __s('General Settings', 'webresources') . '</th></thead>';
+      echo '<td>' . __s('Plugin Menu', 'webresources') . '</td>';
       echo '<td>';
       Dropdown::showFromArray('menu', [
          'management'   => __('Management'),
@@ -60,13 +60,13 @@ class PluginWebresourcesConfig extends CommonDBTM
       echo '</td></tr></table>';
 
       echo "<table class='tab_cadre_fixe'><thead>";
-      echo "<th colspan='4'>" . __('Favicon Settings', 'webresources') . '</th></thead>';
-      echo '<td>' . __('Use DuckDuckGo Favicon Service', 'webresources') . '</td>';
+      echo "<th colspan='4'>" . __s('Favicon Settings', 'webresources') . '</th></thead>';
+      echo '<td>' . __s('Use DuckDuckGo Favicon Service', 'webresources') . '</td>';
       echo '<td>';
       echo "<input type='hidden' name='config_class' value='".__CLASS__."'>";
       echo "<input type='hidden' name='config_context' value='plugin:Webresources'>";
       Dropdown::showYesNo('use_duckduckgo', $config['use_duckduckgo'] ?? 0);
-      echo '</td><td>' .__('Use Google Favicon Service', 'webresources'). '</td><td>';
+      echo '</td><td>' .__s('Use Google Favicon Service', 'webresources'). '</td><td>';
       Dropdown::showYesNo('use_google', $config['use_google'] ?? 0);
       echo '</td></tr></table>';
 
@@ -87,6 +87,7 @@ class PluginWebresourcesConfig extends CommonDBTM
          $config = new self();
          $config->showForm(-1);
       }
+      return true;
    }
 
    public static function getConfig() : array

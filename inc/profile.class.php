@@ -23,7 +23,7 @@
 
 class PluginWebresourcesProfile extends Profile
 {
-   public static $rightname = "config";
+   public static string $rightname = "config";
 
    public function getTabNameForItem(CommonGLPI $item, $withtemplate = 0)
    {
@@ -32,12 +32,15 @@ class PluginWebresourcesProfile extends Profile
 
    public static function displayTabContentForItem(CommonGLPI $item, $tabnum = 1, $withtemplate = 0)
    {
-      $profile = new self();
-      $profile->showForm($item->getID());
+      self::showRightsForm((int) $item->getID());
       return true;
    }
 
-   public function showForm($profiles_id = 0, $openform = true, $closeform = true)
+   /**
+    * Rights matrix of the plugin, shown in its own tab of a profile.
+    * (Not an override of Profile::showForm(): signatures are not compatible in GLPI >= 11.)
+    */
+   public static function showRightsForm(int $profiles_id, bool $openform = true, bool $closeform = true): bool
    {
       if (!self::canView()) {
          return false;
@@ -49,7 +52,7 @@ class PluginWebresourcesProfile extends Profile
 
       $can_edit = Session::haveRight(self::$rightname, UPDATE);
       if ($openform && $can_edit) {
-         echo "<form method='post' action='" . $profile::getFormURL() . "'>";
+         echo "<form method='post' action='" . htmlescape($profile::getFormURL()) . "'>";
       }
 
       $matrix_options = ['canedit' => $can_edit,

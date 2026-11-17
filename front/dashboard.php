@@ -21,11 +21,9 @@
  --------------------------------------------------------------------------
  */
 
-include ('../../../inc/includes.php');
-
 $plugin = new Plugin();
 if (!$plugin->isActivated('webresources')) {
-   Html::displayNotFoundError();
+   throw new \Glpi\Exception\Http\NotFoundHttpException();
 }
 
 Session::checkLoginUser();
